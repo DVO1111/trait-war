@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { MissionCreationDialog } from "@/components/MissionCreationDialog";
 import { useCreator } from "@/hooks/useCreator";
 import { useWalletAuth } from "@/hooks/useWalletAuth";
 import {
@@ -38,12 +39,14 @@ export default function Creator() {
     error,
     reviewSubmission,
     markNotificationAsRead,
-    getUnreadNotificationCount
+    getUnreadNotificationCount,
+    refetch
   } = useCreator();
   
   const [selectedSubmission, setSelectedSubmission] = useState<string | null>(null);
   const [reviewFeedback, setReviewFeedback] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   if (!isAuthenticated) {
     return (
@@ -72,6 +75,10 @@ export default function Creator() {
       setReviewFeedback("");
     }
     setIsSubmitting(false);
+  };
+
+  const handleMissionCreated = () => {
+    refetch();
   };
 
   const getDifficultyColor = (difficulty: string) => {
@@ -132,7 +139,10 @@ export default function Creator() {
           <Badge variant="secondary" className="bg-primary/20 text-primary">
             {getUnreadNotificationCount()} New Notifications
           </Badge>
-          <Button className="bg-primary hover:bg-primary/90 shadow-neon">
+          <Button 
+            className="bg-primary hover:bg-primary/90 shadow-neon"
+            onClick={() => setShowCreateDialog(true)}
+          >
             <Target className="mr-2 h-4 w-4" />
             Create Mission
           </Button>
@@ -314,7 +324,10 @@ export default function Creator() {
                 <p className="text-muted-foreground mb-4">
                   Create your first mission to get started!
                 </p>
-                <Button className="bg-primary hover:bg-primary/90">
+                <Button 
+                  className="bg-primary hover:bg-primary/90"
+                  onClick={() => setShowCreateDialog(true)}
+                >
                   Create Mission
                 </Button>
               </CardContent>
@@ -528,6 +541,13 @@ export default function Creator() {
           </Card>
         </div>
       )}
+
+      {/* Mission Creation Dialog */}
+      <MissionCreationDialog
+        isOpen={showCreateDialog}
+        onClose={() => setShowCreateDialog(false)}
+        onSuccess={handleMissionCreated}
+      />
     </div>
   );
 }
