@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { WalletButton } from "@/components/WalletButton";
 import { Loader2, Shield, Wallet, UserPlus } from "lucide-react";
 import { z } from "zod";
 
@@ -179,11 +180,12 @@ export default function WalletAuth() {
         </CardHeader>
         <CardContent className="space-y-4">
           {!connected ? (
-            <div className="text-center">
+            <div className="text-center space-y-4">
               <Wallet className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground mb-4">
                 Please connect your Solana wallet to continue
               </p>
+              <WalletButton />
               <p className="text-xs text-muted-foreground">
                 Make sure you have a Solana wallet extension installed (like Phantom)
               </p>
