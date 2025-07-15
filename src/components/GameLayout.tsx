@@ -12,7 +12,8 @@ import {
   X,
   LogOut,
   User,
-  Crown
+  Crown,
+  Coins
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -28,6 +29,7 @@ interface GameLayoutProps {
 const navigation = [
   { name: "Dashboard", href: "/", icon: Home },
   { name: "Missions", href: "/missions", icon: Target },
+  { name: "Blockchain", href: "/blockchain", icon: Coins },
   { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
   { name: "Creator", href: "/creator", icon: Crown },
   { name: "DAO", href: "/dao", icon: Users },

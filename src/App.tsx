@@ -11,6 +11,7 @@ import DAO from "./pages/DAO";
 import Leaderboard from "./pages/Leaderboard";
 import Settings from "./pages/Settings";
 import Creator from "./pages/Creator";
+import Blockchain from "./pages/Blockchain";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/dao" element={<GameLayout><DAO /></GameLayout>} />
           <Route path="/leaderboard" element={<GameLayout><Leaderboard /></GameLayout>} />
           <Route path="/creator" element={<GameLayout><Creator /></GameLayout>} />
+          <Route path="/blockchain" element={<GameLayout><Blockchain /></GameLayout>} />
           <Route path="/settings" element={<GameLayout><Settings /></GameLayout>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
