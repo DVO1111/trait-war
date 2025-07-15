@@ -94,25 +94,66 @@ export const useFullBlockchainIntegration = () => {
         if (!currentProject) {
           throw new Error('Failed to create project');
         }
+        
+        // Wait for project to be fully processed on blockchain
+        console.log('Waiting for project to be registered...');
+        await new Promise(resolve => setTimeout(resolve, 3000));
       }
 
-      // Step 2: Create profiles tree
+      // Step 2: Create profiles tree with retry logic
       console.log('Creating profiles tree with project:', currentProject.address);
-      const profilesTreeCreated = await createProfilesTree(currentProject);
+      let profilesTreeCreated = false;
+      let retryCount = 0;
+      const maxRetries = 3;
+      
+      while (!profilesTreeCreated && retryCount < maxRetries) {
+        try {
+          profilesTreeCreated = await createProfilesTree(currentProject);
+          if (!profilesTreeCreated && retryCount < maxRetries - 1) {
+            console.log(`Profiles tree creation failed, retrying... (${retryCount + 1}/${maxRetries})`);
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          }
+        } catch (error) {
+          console.log(`Profiles tree creation error: ${error}, retrying... (${retryCount + 1}/${maxRetries})`);
+          if (retryCount < maxRetries - 1) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          }
+        }
+        retryCount++;
+      }
+      
       if (!profilesTreeCreated) {
-        throw new Error('Failed to create profiles tree');
+        throw new Error('Failed to create profiles tree after multiple attempts');
       }
 
       // Step 3: Create user profile with warrior NFT
       if (!honeycombProfile) {
         console.log('Creating user profile...');
-        const result = await createUserAndProfile(
-          userProfile.display_name || userProfile.username || 'Warrior',
-          userProfile.bio || 'Trait Wars participant',
-          currentProject
-        );
+        let result = null;
+        retryCount = 0;
+        
+        while (!result && retryCount < maxRetries) {
+          try {
+            result = await createUserAndProfile(
+              userProfile.display_name || userProfile.username || 'Warrior',
+              userProfile.bio || 'Trait Wars participant',
+              currentProject
+            );
+            if (!result && retryCount < maxRetries - 1) {
+              console.log(`User profile creation failed, retrying... (${retryCount + 1}/${maxRetries})`);
+              await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+          } catch (error) {
+            console.log(`User profile creation error: ${error}, retrying... (${retryCount + 1}/${maxRetries})`);
+            if (retryCount < maxRetries - 1) {
+              await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+          }
+          retryCount++;
+        }
+        
         if (!result) {
-          throw new Error('Failed to create user profile');
+          throw new Error('Failed to create user profile after multiple attempts');
         }
       }
 
