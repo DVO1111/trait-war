@@ -162,11 +162,16 @@ export const useUserProgress = () => {
     return xpForNextLevel - xpForCurrentLevel - progress.current_level_xp;
   };
 
-  const getProgressToNextLevel = () => {
+  const getXPNeededForNextLevel = () => {
     if (!progress) return 0;
     const xpForNextLevel = calculateXPForLevel(progress.level + 1);
     const xpForCurrentLevel = progress.level > 1 ? calculateXPForLevel(progress.level) : 0;
-    const xpNeededForLevel = xpForNextLevel - xpForCurrentLevel;
+    return xpForNextLevel - xpForCurrentLevel;
+  };
+
+  const getProgressToNextLevel = () => {
+    if (!progress) return 0;
+    const xpNeededForLevel = getXPNeededForNextLevel();
     return (progress.current_level_xp / xpNeededForLevel) * 100;
   };
 
@@ -184,6 +189,7 @@ export const useUserProgress = () => {
     deductXP,
     calculateXPForLevel,
     getXPToNextLevel,
+    getXPNeededForNextLevel,
     getProgressToNextLevel,
   };
 };

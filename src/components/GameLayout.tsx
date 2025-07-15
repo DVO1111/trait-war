@@ -41,7 +41,7 @@ export function GameLayout({ children }: GameLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, loading, signOut, isAuthenticated, displayName } = useAuth();
-  const { progress, getXPToNextLevel, getProgressToNextLevel } = useUserProgress();
+  const { progress, getXPNeededForNextLevel, getProgressToNextLevel } = useUserProgress();
 
 
 
@@ -75,7 +75,7 @@ export function GameLayout({ children }: GameLayoutProps) {
     level: progress?.level || 1,
     xp: progress?.total_xp || 0,
     currentLevelXP: progress?.current_level_xp || 0,
-    xpToNext: getXPToNextLevel(),
+    xpToNext: getXPNeededForNextLevel(),
     progressToNext: getProgressToNextLevel(),
     traits: {
       builder: 85, // These would come from blockchain/missions in the future
