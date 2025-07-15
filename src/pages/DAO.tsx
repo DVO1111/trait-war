@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useWalletAuth } from "@/hooks/useWalletAuth";
+import { useUserProgress } from "@/hooks/useUserProgress";
 import {
   Vote,
   Trophy,
@@ -25,6 +26,7 @@ import {
 
 export default function DAO() {
   const { isAuthenticated, profile } = useWalletAuth();
+  const { progress, deductXP, loading: progressLoading } = useUserProgress();
   const { toast } = useToast();
   const [selectedProposal, setSelectedProposal] = useState<string | null>(null);
   const [votingStates, setVotingStates] = useState<Record<string, { isVoting: boolean; hasVoted: boolean; userVote?: 'for' | 'against' }>>({});
@@ -106,11 +108,9 @@ export default function DAO() {
     return Math.round((votesFor / totalVotes) * 100);
   };
 
-  // Mock XP calculation based on profile
+  // Get current user XP from actual progress
   const getCurrentUserXP = () => {
-    if (!profile) return 0;
-    // Mock calculation - in real app this would come from profile or blockchain
-    return (profile.warrior_count || 0) * 50 + 150; // Base XP plus warrior bonuses
+    return progress?.total_xp || 0;
   };
 
   const handleVote = async (proposalId: string, vote: 'for' | 'against') => {
@@ -155,12 +155,24 @@ export default function DAO() {
 
     try {
       // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Actually deduct XP for voting
+      const xpCost = proposal.requiredXP;
+      const deductionSuccess = await deductXP(xpCost, `voting on "${proposal.title}"`);
+      
+      if (!deductionSuccess) {
+        setVotingStates(prev => ({
+          ...prev,
+          [proposalId]: { isVoting: false, hasVoted: false }
+        }));
+        return;
+      }
 
       // Update proposal vote counts
       setProposals(prev => prev.map(p => {
         if (p.id === proposalId) {
-          const votingPower = userXP; // Use XP as voting power
+          const votingPower = xpCost; // Use XP cost as voting power
           return {
             ...p,
             votesFor: vote === 'for' ? p.votesFor + votingPower : p.votesFor,
@@ -178,8 +190,8 @@ export default function DAO() {
       }));
 
       toast({
-        title: "Vote Recorded!",
-        description: `Your vote ${vote === 'for' ? 'for' : 'against'} "${proposal.title}" has been recorded with ${userXP} voting power.`,
+        title: "Vote Recorded! 🗳️",
+        description: `Your vote ${vote === 'for' ? 'for' : 'against'} "${proposal.title}" has been recorded. ${xpCost} XP deducted.`,
       });
 
     } catch (error) {

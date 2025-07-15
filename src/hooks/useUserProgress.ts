@@ -118,6 +118,39 @@ export const useUserProgress = () => {
     }
   };
 
+  const deductXP = async (xpAmount: number, reason: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !progress) return false;
+
+      if (progress.total_xp < xpAmount) {
+        toast({
+          title: "Insufficient XP",
+          description: `You need ${xpAmount} XP but only have ${progress.total_xp} XP.`,
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      const newTotalXP = progress.total_xp - xpAmount;
+      
+      await updateUserProgress({
+        total_xp: newTotalXP,
+        last_activity_date: new Date().toISOString().split('T')[0],
+      });
+
+      toast({
+        title: "XP Deducted",
+        description: `-${xpAmount} XP for ${reason}`,
+      });
+
+      return true;
+    } catch (err) {
+      console.error('Error deducting XP:', err);
+      return false;
+    }
+  };
+
   const calculateXPForLevel = (level: number) => {
     return level * 100 + (level - 1) * 50;
   };
@@ -148,6 +181,7 @@ export const useUserProgress = () => {
     refetch: fetchUserProgress,
     updateUserProgress,
     awardXP,
+    deductXP,
     calculateXPForLevel,
     getXPToNextLevel,
     getProgressToNextLevel,
