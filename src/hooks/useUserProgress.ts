@@ -28,7 +28,10 @@ export const useUserProgress = () => {
       setError(null);
       
       const { data: { user } } = await supabase.auth.getUser();
+      console.log('User in fetchUserProgress:', user?.id);
+      
       if (!user) {
+        console.log('No user found, cannot fetch progress');
         setProgress(null);
         return;
       }

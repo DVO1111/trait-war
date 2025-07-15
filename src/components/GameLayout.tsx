@@ -41,7 +41,7 @@ export function GameLayout({ children }: GameLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, loading, signOut, isAuthenticated, displayName } = useAuth();
-  const { progress, getXPNeededForNextLevel, getProgressToNextLevel } = useUserProgress();
+  const { progress, getXPNeededForNextLevel, getProgressToNextLevel, loading: progressLoading } = useUserProgress();
 
 
 
@@ -69,14 +69,14 @@ export function GameLayout({ children }: GameLayoutProps) {
     return null;
   }
 
-  // Get real player data from progress
+  // Get real player data from progress with fallbacks
   const playerData = {
-    username: displayName,
+    username: displayName || "Builder",
     level: progress?.level || 1,
     xp: progress?.total_xp || 0,
     currentLevelXP: progress?.current_level_xp || 0,
-    xpToNext: getXPNeededForNextLevel(),
-    progressToNext: getProgressToNextLevel(),
+    xpToNext: progress ? getXPNeededForNextLevel() : 250, // Default to 250 for level 1
+    progressToNext: progress ? getProgressToNextLevel() : 0,
     traits: {
       builder: 85, // These would come from blockchain/missions in the future
       community: 67,
