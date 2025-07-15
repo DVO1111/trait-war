@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { HoneycombDemo } from "@/components/HoneycombDemo";
 import solanaLogo from "@/assets/solana-logo.svg";
 import superteamLogo from "@/assets/superteam-logo.png";
+import superteamNigeriaLogo from "@/assets/superteam-nigeria-logo.png";
 import {
   Target,
   Trophy,
@@ -105,8 +106,8 @@ export default function Dashboard() {
 
   const getBadgeLogo = (rank: number) => {
     if (rank === 1) return solanaLogo;
-    if (rank === 2) return superteamLogo;
-    if (rank === 3) return solanaLogo;
+    if (rank === 2) return superteamNigeriaLogo;
+    if (rank === 3) return superteamLogo;
     return null;
   };
 
@@ -295,7 +296,11 @@ export default function Dashboard() {
                       <div className="relative">
                         <img 
                           src={getBadgeLogo(builder.rank)!} 
-                          alt={builder.rank === 2 ? "Superteam" : "Solana"} 
+                          alt={
+                            builder.rank === 1 ? "Solana" : 
+                            builder.rank === 2 ? "Superteam Nigeria" : 
+                            "Superteam"
+                          } 
                           className="w-6 h-6"
                         />
                         <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full border border-background flex items-center justify-center">
