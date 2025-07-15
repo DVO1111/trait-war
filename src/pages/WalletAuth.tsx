@@ -1,5 +1,6 @@
 import { useWalletAuth } from "@/hooks/useWalletAuth";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,13 +21,15 @@ const profileSchema = z.object({
 });
 
 export default function WalletAuth() {
+  const navigate = useNavigate();
   const { 
     connected, 
     isAuthenticated, 
     needsProfileSetup, 
     loading, 
     signInWithWallet, 
-    createProfile 
+    createProfile,
+    profile
   } = useWalletAuth();
   
   const [profileData, setProfileData] = useState({
@@ -36,6 +39,13 @@ export default function WalletAuth() {
   });
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [isCreatingProfile, setIsCreatingProfile] = useState(false);
+
+  // Redirect to main app when fully authenticated with profile
+  useEffect(() => {
+    if (isAuthenticated && profile && !needsProfileSetup) {
+      navigate("/");
+    }
+  }, [isAuthenticated, profile, needsProfileSetup, navigate]);
 
   const handleCreateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +62,8 @@ export default function WalletAuth() {
       
       // Reset form
       setProfileData({ username: "", displayName: "", bio: "" });
+      
+      // Navigation will happen automatically via useEffect
     } catch (error) {
       if (error instanceof z.ZodError) {
         const errors: Record<string, string> = {};
