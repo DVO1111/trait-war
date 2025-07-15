@@ -7,6 +7,7 @@ import { GameLayout } from "@/components/GameLayout";
 import Index from "./pages/Index";
 import Missions from "./pages/Missions";
 import DAO from "./pages/DAO";
+import Leaderboard from "./pages/Leaderboard";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/missions" element={<GameLayout><Missions /></GameLayout>} />
           <Route path="/dao" element={<GameLayout><DAO /></GameLayout>} />
+          <Route path="/leaderboard" element={<GameLayout><Leaderboard /></GameLayout>} />
           <Route path="/settings" element={<GameLayout><Settings /></GameLayout>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
