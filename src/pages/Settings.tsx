@@ -258,11 +258,22 @@ export default function SettingsPage() {
                 />
               </div>
               <div className="flex items-center justify-between">
-                <Label htmlFor="music">Background Music</Label>
+                <Label htmlFor="music">Superteam Background Music</Label>
                 <Switch
                   id="music"
                   checked={settings.musicEnabled}
-                  onCheckedChange={(checked) => setSettings(prev => ({ ...prev, musicEnabled: checked }))}
+                  onCheckedChange={(checked) => {
+                    setSettings(prev => ({ ...prev, musicEnabled: checked }));
+                    // Update localStorage immediately for real-time effect
+                    const newSettings = { ...settings, musicEnabled: checked };
+                    localStorage.setItem('superteam-music-settings', JSON.stringify({
+                      enabled: checked,
+                      volume: settings.volume
+                    }));
+                    window.dispatchEvent(new CustomEvent('musicSettingsChanged', {
+                      detail: { enabled: checked, volume: settings.volume }
+                    }));
+                  }}
                 />
               </div>
               <div className="space-y-2">
@@ -273,12 +284,23 @@ export default function SettingsPage() {
                   min="0"
                   max="100"
                   value={settings.volume}
-                  onChange={(e) => setSettings(prev => ({ ...prev, volume: parseInt(e.target.value) }))}
+                  onChange={(e) => {
+                    const newVolume = parseInt(e.target.value);
+                    setSettings(prev => ({ ...prev, volume: newVolume }));
+                    // Update localStorage immediately for real-time effect
+                    localStorage.setItem('superteam-music-settings', JSON.stringify({
+                      enabled: settings.musicEnabled,
+                      volume: newVolume
+                    }));
+                    window.dispatchEvent(new CustomEvent('musicSettingsChanged', {
+                      detail: { enabled: settings.musicEnabled, volume: newVolume }
+                    }));
+                  }}
                   className="w-full"
                 />
-              </div>
-            </CardContent>
-          </Card>
+               </div>
+             </CardContent>
+           </Card>
 
           {/* Notification Settings */}
           <Card className="bg-gradient-mission border-border">
