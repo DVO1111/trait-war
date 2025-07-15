@@ -10,90 +10,84 @@ interface BackgroundMusicProps {
 export const BackgroundMusic = ({ isEnabled, volume }: BackgroundMusicProps) => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [currentSettings, setCurrentSettings] = useState({ isEnabled, volume });
 
-  // Create a simple ambient tone using Web Audio API as a placeholder
-  const createAmbientTone = () => {
-    if (typeof window !== 'undefined' && 'AudioContext' in window) {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      // Create a subtle ambient drone
-      oscillator.frequency.setValueAtTime(220, audioContext.currentTime); // A3 note
-      oscillator.type = 'sine';
-      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-      
-      return { oscillator, gainNode, audioContext };
-    }
-    return null;
-  };
-
-  const [audioNodes, setAudioNodes] = useState<any>(null);
-
+  // Listen for settings changes from localStorage
   useEffect(() => {
-    if (isEnabled && !isPlaying && !audioNodes) {
-      const nodes = createAmbientTone();
-      if (nodes) {
-        setAudioNodes(nodes);
-        nodes.oscillator.start();
-        nodes.gainNode.gain.setValueAtTime((volume / 100) * 0.1, nodes.audioContext.currentTime);
-        setIsPlaying(true);
+    const handleSettingsChange = (event: CustomEvent) => {
+      setCurrentSettings(event.detail);
+    };
+
+    window.addEventListener('musicSettingsChanged', handleSettingsChange as EventListener);
+    
+    return () => {
+      window.removeEventListener('musicSettingsChanged', handleSettingsChange as EventListener);
+    };
+  }, []);
+
+  // Control audio playback based on settings
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = currentSettings.volume / 100;
+      
+      if (currentSettings.isEnabled && !isPlaying) {
+        audioRef.current.play().then(() => {
+          setIsPlaying(true);
+        }).catch((error) => {
+          console.log('Autoplay prevented:', error);
+        });
+      } else if (!currentSettings.isEnabled && isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
       }
-    } else if (!isEnabled && audioNodes) {
-      audioNodes.oscillator.stop();
-      audioNodes.audioContext.close();
-      setAudioNodes(null);
-      setIsPlaying(false);
-    } else if (audioNodes && isEnabled) {
-      audioNodes.gainNode.gain.setValueAtTime((volume / 100) * 0.1, audioNodes.audioContext.currentTime);
     }
+  }, [currentSettings, isPlaying]);
+
+  // Update settings when props change
+  useEffect(() => {
+    setCurrentSettings({ isEnabled, volume });
   }, [isEnabled, volume]);
 
-  useEffect(() => {
-    return () => {
-      if (audioNodes) {
-        try {
-          audioNodes.oscillator.stop();
-          audioNodes.audioContext.close();
-        } catch (e) {
-          // Audio context may already be closed
-        }
-      }
-    };
-  }, [audioNodes]);
-
   const handlePlayPause = () => {
-    if (isPlaying && audioNodes) {
-      audioNodes.oscillator.stop();
-      audioNodes.audioContext.close();
-      setAudioNodes(null);
-      setIsPlaying(false);
-    } else if (!isPlaying) {
-      const nodes = createAmbientTone();
-      if (nodes) {
-        setAudioNodes(nodes);
-        nodes.oscillator.start();
-        nodes.gainNode.gain.setValueAtTime((volume / 100) * 0.1, nodes.audioContext.currentTime);
-        setIsPlaying(true);
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        audioRef.current.play().then(() => {
+          setIsPlaying(true);
+        }).catch((error) => {
+          console.log('Play failed:', error);
+        });
       }
     }
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">      
+    <div className="fixed bottom-4 right-4 z-50">
+      <audio
+        ref={audioRef}
+        loop
+        preload="auto"
+        onLoadedData={() => {}}
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+      >
+        <source src="https://soundcloud.com/olamidemusic/billionaires-club-feat-wizkid" type="audio/mpeg" />
+        <source src="/audio/billionaires-club-olamide.mp3" type="audio/mpeg" />
+        {/* Billionaire Club by Olamide ft. Wizkid & Darkoo */}
+        Your browser does not support the audio element.
+      </audio>
+      
       <Button
         variant="ghost"
         size="icon"
-        className="bg-background/80 backdrop-blur-sm border border-border hover:bg-primary/10 transition-all duration-300 animate-pulse"
+        className="bg-background/80 backdrop-blur-sm border border-border hover:bg-primary/10 transition-all duration-300"
         onClick={handlePlayPause}
-        title={isPlaying ? "Pause Superteam Ambient Music" : "Play Superteam Ambient Music"}
+        title={isPlaying ? "Pause Billionaire Club" : "Play Billionaire Club"}
       >
         {isPlaying ? (
-          isEnabled ? <Volume2 className="h-4 w-4 text-primary" /> : <VolumeX className="h-4 w-4 text-muted-foreground" />
+          currentSettings.isEnabled ? <Volume2 className="h-4 w-4 text-primary" /> : <VolumeX className="h-4 w-4 text-muted-foreground" />
         ) : (
           <Play className="h-4 w-4 text-muted-foreground" />
         )}
