@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -24,6 +25,7 @@ import {
 
 export default function Dashboard() {
   const [selectedMission, setSelectedMission] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   // Mock data - would come from blockchain/API in real app
   const dashboardData = {
@@ -216,7 +218,10 @@ export default function Dashboard() {
                       ? 'border-primary shadow-neon' 
                       : 'border-border hover:border-primary/50'
                   }`}
-                  onClick={() => setSelectedMission(selectedMission === mission.id ? null : mission.id)}
+                   onClick={() => {
+                     setSelectedMission(selectedMission === mission.id ? null : mission.id);
+                     navigate('/missions');
+                   }}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -247,6 +252,10 @@ export default function Dashboard() {
                     <Button 
                       size="sm" 
                       className="ml-4 bg-primary hover:bg-primary/90"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate('/missions');
+                      }}
                     >
                       Start <ArrowRight className="ml-1 h-3 w-3" />
                     </Button>
@@ -255,7 +264,11 @@ export default function Dashboard() {
               ))}
               
               <div className="text-center pt-4">
-                <Button variant="outline" className="border-primary text-primary hover:bg-primary/10">
+                <Button 
+                  variant="outline" 
+                  className="border-primary text-primary hover:bg-primary/10"
+                  onClick={() => navigate('/missions')}
+                >
                   View All Missions
                 </Button>
               </div>
@@ -313,7 +326,12 @@ export default function Dashboard() {
               ))}
               
               <div className="text-center pt-2">
-                <Button variant="ghost" size="sm" className="text-muted-foreground">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-muted-foreground"
+                  onClick={() => navigate('/leaderboard')}
+                >
                   View Full Leaderboard
                 </Button>
               </div>
