@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
+import { useWalletAuth } from "@/hooks/useWalletAuth";
 import {
   Vote,
   Trophy,
@@ -16,89 +19,78 @@ import {
   AlertCircle,
   Crown,
   Shield,
-  Zap
+  Zap,
+  Loader2
 } from "lucide-react";
 
 export default function DAO() {
+  const { isAuthenticated, profile } = useWalletAuth();
+  const { toast } = useToast();
   const [selectedProposal, setSelectedProposal] = useState<string | null>(null);
-
-  // Mock DAO data
-  const daoData = {
-    treasuryValue: 2847000,
-    totalMembers: 1247,
-    activeProposals: 7,
-    myVotingPower: 342,
-    proposals: [
-      {
-        id: "1",
-        title: "Q2 2024 Development Fund Allocation",
-        description: "Allocate 500,000 tokens for development initiatives including new feature development, security audits, and community tools.",
-        category: "Treasury",
-        status: "active",
-        votesFor: 654321,
-        votesAgainst: 123456,
-        totalVotes: 777777,
-        timeLeft: "3 days",
-        proposer: "DevTeam_Lead",
-        requiredXP: 100,
-        details: {
-          breakdown: [
-            { item: "Core Development", amount: 300000, percentage: 60 },
-            { item: "Security Audits", amount: 100000, percentage: 20 },
-            { item: "Community Tools", amount: 100000, percentage: 20 }
-          ]
-        }
-      },
-      {
-        id: "2",
-        title: "New Mission Category: AI/ML",
-        description: "Introduce artificial intelligence and machine learning as a new mission category with specialized XP multipliers.",
-        category: "Governance",
-        status: "active",
-        votesFor: 234567,
-        votesAgainst: 87654,
-        totalVotes: 322221,
-        timeLeft: "1 week",
-        proposer: "AI_Researcher_99",
-        requiredXP: 50,
-        details: {
-          changes: [
-            "Add AI/ML mission category",
-            "Implement 1.5x XP multiplier for AI missions",
-            "Create specialized validator roles"
-          ]
-        }
-      },
-      {
-        id: "3",
-        title: "Guild System Implementation",
-        description: "Implement a guild system allowing players to form groups, share XP bonuses, and compete in team challenges.",
-        category: "Features",
-        status: "passed",
-        votesFor: 891234,
-        votesAgainst: 45678,
-        totalVotes: 936912,
-        timeLeft: "Passed",
-        proposer: "Guild_Master_X",
-        requiredXP: 75,
-        details: {
-          features: [
-            "Guild creation and management",
-            "Shared XP bonus pools",
-            "Inter-guild competitions",
-            "Guild-specific missions"
-          ]
-        }
+  const [votingStates, setVotingStates] = useState<Record<string, { isVoting: boolean; hasVoted: boolean; userVote?: 'for' | 'against' }>>({});
+  const [proposals, setProposals] = useState([
+    {
+      id: "1",
+      title: "Q2 2024 Development Fund Allocation",
+      description: "Allocate 500,000 tokens for development initiatives including new feature development, security audits, and community tools.",
+      category: "Treasury",
+      status: "active",
+      votesFor: 654321,
+      votesAgainst: 123456,
+      totalVotes: 777777,
+      timeLeft: "3 days",
+      proposer: "DevTeam_Lead",
+      requiredXP: 100,
+      details: {
+        breakdown: [
+          { item: "Core Development", amount: 300000, percentage: 60 },
+          { item: "Security Audits", amount: 100000, percentage: 20 },
+          { item: "Community Tools", amount: 100000, percentage: 20 }
+        ]
       }
-    ],
-    leaderboard: [
-      { rank: 1, username: "Master_Builder_42", xp: 15647, traits: { builder: 95, community: 89, governance: 78 } },
-      { rank: 2, username: "DAO_Architect", xp: 14523, traits: { builder: 87, community: 95, governance: 92 } },
-      { rank: 3, username: "Code_Wizard_99", xp: 13891, traits: { builder: 92, community: 76, governance: 85 } },
-      { rank: 4, username: "Community_Hero", xp: 12456, traits: { builder: 68, community: 97, governance: 73 } },
-      { rank: 5, username: "Builder_0x42", xp: 11234, traits: { builder: 85, community: 67, governance: 42 } }
-    ]
-  };
+    },
+    {
+      id: "2",
+      title: "New Mission Category: AI/ML",
+      description: "Introduce artificial intelligence and machine learning as a new mission category with specialized XP multipliers.",
+      category: "Governance",
+      status: "active",
+      votesFor: 234567,
+      votesAgainst: 87654,
+      totalVotes: 322221,
+      timeLeft: "1 week",
+      proposer: "AI_Researcher_99",
+      requiredXP: 50,
+      details: {
+        changes: [
+          "Add AI/ML mission category",
+          "Implement 1.5x XP multiplier for AI missions",
+          "Create specialized validator roles"
+        ]
+      }
+    },
+    {
+      id: "3",
+      title: "Guild System Implementation",
+      description: "Implement a guild system allowing players to form groups, share XP bonuses, and compete in team challenges.",
+      category: "Features",
+      status: "passed",
+      votesFor: 891234,
+      votesAgainst: 45678,
+      totalVotes: 936912,
+      timeLeft: "Passed",
+      proposer: "Guild_Master_X",
+      requiredXP: 75,
+      details: {
+        features: [
+          "Guild creation and management",
+          "Shared XP bonus pools",
+          "Inter-guild competitions",
+          "Guild-specific missions"
+        ]
+      }
+    }
+  ]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -112,6 +104,104 @@ export default function DAO() {
 
   const getVotePercentage = (votesFor: number, totalVotes: number) => {
     return Math.round((votesFor / totalVotes) * 100);
+  };
+
+  // Mock XP calculation based on profile
+  const getCurrentUserXP = () => {
+    if (!profile) return 0;
+    // Mock calculation - in real app this would come from profile or blockchain
+    return (profile.warrior_count || 0) * 50 + 150; // Base XP plus warrior bonuses
+  };
+
+  const handleVote = async (proposalId: string, vote: 'for' | 'against') => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please connect your wallet to vote on proposals.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const userXP = getCurrentUserXP();
+    const proposal = proposals.find(p => p.id === proposalId);
+    
+    if (!proposal) return;
+
+    if (userXP < proposal.requiredXP) {
+      toast({
+        title: "Insufficient XP",
+        description: `You need ${proposal.requiredXP} XP to vote on this proposal. You currently have ${userXP} XP.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const currentVoteState = votingStates[proposalId];
+    if (currentVoteState?.hasVoted) {
+      toast({
+        title: "Already Voted",
+        description: "You have already voted on this proposal.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Set voting state
+    setVotingStates(prev => ({
+      ...prev,
+      [proposalId]: { isVoting: true, hasVoted: false }
+    }));
+
+    try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Update proposal vote counts
+      setProposals(prev => prev.map(p => {
+        if (p.id === proposalId) {
+          const votingPower = userXP; // Use XP as voting power
+          return {
+            ...p,
+            votesFor: vote === 'for' ? p.votesFor + votingPower : p.votesFor,
+            votesAgainst: vote === 'against' ? p.votesAgainst + votingPower : p.votesAgainst,
+            totalVotes: p.totalVotes + votingPower
+          };
+        }
+        return p;
+      }));
+
+      // Update voting state
+      setVotingStates(prev => ({
+        ...prev,
+        [proposalId]: { isVoting: false, hasVoted: true, userVote: vote }
+      }));
+
+      toast({
+        title: "Vote Recorded!",
+        description: `Your vote ${vote === 'for' ? 'for' : 'against'} "${proposal.title}" has been recorded with ${userXP} voting power.`,
+      });
+
+    } catch (error) {
+      setVotingStates(prev => ({
+        ...prev,
+        [proposalId]: { isVoting: false, hasVoted: false }
+      }));
+
+      toast({
+        title: "Voting Failed",
+        description: "Failed to record your vote. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // DAO data with dynamic calculations
+  const daoData = {
+    treasuryValue: 2847000,
+    totalMembers: 1247,
+    activeProposals: proposals.filter(p => p.status === 'active').length,
+    myVotingPower: getCurrentUserXP(),
   };
 
   return (
@@ -196,16 +286,30 @@ export default function DAO() {
         </TabsList>
 
         <TabsContent value="proposals" className="space-y-4">
-          {daoData.proposals.map((proposal) => (
-            <Card 
-              key={proposal.id}
-              className={`cursor-pointer transition-all border ${
-                selectedProposal === proposal.id 
-                  ? 'border-primary shadow-neon bg-gradient-cyber' 
-                  : 'border-border hover:border-primary/50 bg-gradient-mission'
-              }`}
-              onClick={() => setSelectedProposal(selectedProposal === proposal.id ? null : proposal.id)}
-            >
+          {!isAuthenticated && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Connect your wallet to participate in DAO governance and vote on proposals.
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {proposals.map((proposal) => {
+            const voteState = votingStates[proposal.id];
+            const userXP = getCurrentUserXP();
+            const canVote = isAuthenticated && userXP >= proposal.requiredXP && !voteState?.hasVoted;
+            
+            return (
+              <Card 
+                key={proposal.id}
+                className={`cursor-pointer transition-all border ${
+                  selectedProposal === proposal.id 
+                    ? 'border-primary shadow-neon bg-gradient-cyber' 
+                    : 'border-border hover:border-primary/50 bg-gradient-mission'
+                }`}
+                onClick={() => setSelectedProposal(selectedProposal === proposal.id ? null : proposal.id)}
+              >
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="space-y-2">
@@ -310,21 +414,63 @@ export default function DAO() {
                 )}
                 
                 {proposal.status === 'active' && (
-                  <div className="flex gap-2 pt-2">
-                    <Button className="flex-1 bg-primary hover:bg-primary/90">
-                      <CheckCircle className="mr-2 h-4 w-4" />
-                      Vote For
-                    </Button>
-                    <Button variant="outline" className="flex-1 border-destructive text-destructive hover:bg-destructive/10">
-                      <XCircle className="mr-2 h-4 w-4" />
-                      Vote Against
-                    </Button>
+                  <div className="space-y-3">
+                    {voteState?.hasVoted && (
+                      <Alert>
+                        <CheckCircle className="h-4 w-4" />
+                        <AlertDescription>
+                          You voted <strong>{voteState.userVote}</strong> this proposal.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                    
+                    <div className="flex gap-2 pt-2">
+                      <Button 
+                        className="flex-1 bg-primary hover:bg-primary/90"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleVote(proposal.id, 'for');
+                        }}
+                        disabled={!canVote || voteState?.isVoting}
+                      >
+                        {voteState?.isVoting ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <CheckCircle className="mr-2 h-4 w-4" />
+                        )}
+                        Vote For
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="flex-1 border-destructive text-destructive hover:bg-destructive/10"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleVote(proposal.id, 'against');
+                        }}
+                        disabled={!canVote || voteState?.isVoting}
+                      >
+                        {voteState?.isVoting ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <XCircle className="mr-2 h-4 w-4" />
+                        )}
+                        Vote Against
+                      </Button>
+                    </div>
                   </div>
                 )}
                 
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <AlertCircle className="h-3 w-3" />
-                  Requires {proposal.requiredXP} XP to vote
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="h-3 w-3" />
+                    Requires {proposal.requiredXP} XP to vote
+                  </div>
+                  {isAuthenticated && (
+                    <div className="flex items-center gap-2">
+                      <Zap className="h-3 w-3" />
+                      Your XP: {userXP}
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
