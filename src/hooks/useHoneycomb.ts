@@ -29,7 +29,7 @@ interface HoneycombCharacter {
 export const useHoneycomb = () => {
   const wallet = useWallet();
   const { toast } = useToast();
-  const { user, profile: userProfile, updateProfile } = useAuth();
+  const { profile: userProfile, updateProfile, isAuthenticated, walletAddress } = useAuth();
   const [loading, setLoading] = useState(false);
   const [project, setProject] = useState<HoneycombProject | null>(null);
   const [honeycombProfile, setHoneycombProfile] = useState<HoneycombProfile | null>(null);
@@ -142,10 +142,10 @@ export const useHoneycomb = () => {
 
   // Create a user and profile with automatic NFT minting
   const createUserAndProfile = useCallback(async (name: string, bio?: string) => {
-    if (!user) {
+    if (!isAuthenticated || !walletAddress) {
       toast({
         title: "Authentication required",
-        description: "Please sign in to create a warrior profile",
+        description: "Please connect and authenticate your wallet first",
         variant: "destructive",
       });
       return;
@@ -232,7 +232,7 @@ export const useHoneycomb = () => {
     } finally {
       setLoading(false);
     }
-  }, [wallet, project, toast, user, userProfile, updateProfile]);
+  }, [wallet, project, toast, isAuthenticated, walletAddress, userProfile, updateProfile]);
 
   // Mint a warrior NFT with traits
   const mintWarriorNFT = useCallback(async (name: string, traits: Record<string, any>) => {

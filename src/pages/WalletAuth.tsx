@@ -43,7 +43,11 @@ export default function WalletAuth() {
 
     try {
       const validatedData = profileSchema.parse(profileData);
-      await createProfile(validatedData);
+      await createProfile({
+        username: validatedData.username,
+        displayName: validatedData.displayName,
+        bio: validatedData.bio
+      });
       
       // Reset form
       setProfileData({ username: "", displayName: "", bio: "" });
