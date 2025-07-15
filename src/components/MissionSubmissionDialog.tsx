@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
+import { useMissions, Mission } from '@/hooks/useMissions';
 import { z } from 'zod';
 import { 
   Upload, 
@@ -22,21 +23,6 @@ import {
   CheckCircle,
   AlertCircle
 } from 'lucide-react';
-
-interface Mission {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  xp: number;
-  difficulty: string;
-  timeLeft: string;
-  participants: number;
-  creator: string;
-  isOfficial: boolean;
-  requirements: string[];
-  deliverables: string[];
-}
 
 // Validation schema for mission submission
 const submissionSchema = z.object({
@@ -77,6 +63,7 @@ export const MissionSubmissionDialog = ({ mission, isOpen, onClose }: MissionSub
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const { toast } = useToast();
+  const { submitMission } = useMissions();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,25 +79,31 @@ export const MissionSubmissionDialog = ({ mission, isOpen, onClose }: MissionSub
         throw new Error("Title contains invalid characters");
       }
 
-      // Simulate submission
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      if (!mission) throw new Error("No mission selected");
 
-      toast({
-        title: "Mission Submitted Successfully! 🎉",
-        description: `Your submission for "${mission?.title}" has been sent for review. You'll earn ${mission?.xp} XP once approved.`,
+      // Submit to database
+      const success = await submitMission(mission.id, {
+        title: validatedData.title,
+        description: validatedData.description,
+        github_url: validatedData.githubUrl,
+        demo_url: validatedData.demoUrl,
+        documentation_url: validatedData.documentationUrl,
+        additional_notes: validatedData.additionalNotes,
       });
 
-      onClose();
-      
-      // Reset form
-      setSubmissionData({
-        title: '',
-        description: '',
-        githubUrl: '',
-        demoUrl: '',
-        documentationUrl: '',
-        additionalNotes: ''
-      });
+      if (success) {
+        onClose();
+        
+        // Reset form
+        setSubmissionData({
+          title: '',
+          description: '',
+          githubUrl: '',
+          demoUrl: '',
+          documentationUrl: '',
+          additionalNotes: ''
+        });
+      }
       
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -129,7 +122,7 @@ export const MissionSubmissionDialog = ({ mission, isOpen, onClose }: MissionSub
       } else {
         toast({
           title: "Submission Error",
-          description: "Failed to submit mission. Please try again.",
+          description: error instanceof Error ? error.message : "Failed to submit mission. Please try again.",
           variant: "destructive",
         });
       }
@@ -174,15 +167,11 @@ export const MissionSubmissionDialog = ({ mission, isOpen, onClose }: MissionSub
           <div className="flex items-center gap-4 text-xs text-gaming-muted">
             <span className="flex items-center gap-1">
               <Star className="h-3 w-3 text-gaming-accent" />
-              <span className="text-gaming-accent font-medium">{mission.xp} XP</span>
+              <span className="text-gaming-accent font-medium">{mission.xp_reward} XP</span>
             </span>
             <span className="flex items-center gap-1">
               <Clock className="h-3 w-3" />
-              {mission.timeLeft}
-            </span>
-            <span className="flex items-center gap-1">
-              <Users className="h-3 w-3" />
-              {mission.participants} participants
+              {mission.expires_at ? new Date(mission.expires_at).toLocaleDateString() : 'No deadline'}
             </span>
           </div>
         </div>
@@ -306,7 +295,7 @@ export const MissionSubmissionDialog = ({ mission, isOpen, onClose }: MissionSub
             <AlertCircle className="h-4 w-4 text-gaming-accent" />
             <p className="text-xs text-gaming-muted">
               Your submission will be reviewed by the mission creator and DAO validators. 
-              You'll receive {mission.xp} XP once approved.
+              You'll receive {mission.xp_reward} XP once approved.
             </p>
           </div>
 

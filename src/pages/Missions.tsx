@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MissionSubmissionDialog } from "@/components/MissionSubmissionDialog";
+import { UserOnboarding } from "@/components/UserOnboarding";
+import { useMissions, Mission } from "@/hooks/useMissions";
+import { useUserProgress } from "@/hooks/useUserProgress";
+import { useWalletAuth } from "@/hooks/useWalletAuth";
 import {
   Target,
   Star,
@@ -17,7 +21,8 @@ import {
   Code,
   BookOpen,
   Vote,
-  Zap
+  Zap,
+  Loader2
 } from "lucide-react";
 
 const missionCategories = [
@@ -28,85 +33,26 @@ const missionCategories = [
   { id: "education", name: "Education", icon: BookOpen }
 ];
 
-const missions = [
-  {
-    id: "1",
-    title: "Build a Solana NFT Marketplace",
-    description: "Create a fully functional NFT marketplace on Solana with minting, buying, and selling capabilities",
-    category: "tech",
-    xp: 300,
-    difficulty: "Advanced",
-    timeLeft: "6 days",
-    participants: 24,
-    creator: "DAO Treasury",
-    isOfficial: true,
-    requirements: ["Solana development experience", "React/TypeScript", "Anchor framework"],
-    deliverables: ["GitHub repository", "Live demo", "Documentation"]
-  },
-  {
-    id: "2", 
-    title: "Write DeFi Security Guide",
-    description: "Create a comprehensive guide on DeFi security best practices for new users",
-    category: "education",
-    xp: 120,
-    difficulty: "Intermediate",
-    timeLeft: "3 days",
-    participants: 8,
-    creator: "SecurityDAO",
-    isOfficial: true,
-    requirements: ["DeFi experience", "Technical writing skills"],
-    deliverables: ["Written guide (3000+ words)", "Code examples", "Infographics"]
-  },
-  {
-    id: "3",
-    title: "Community Discord Bot",
-    description: "Build a Discord bot to help manage community activities and XP tracking",
-    category: "community",
-    xp: 180,
-    difficulty: "Intermediate", 
-    timeLeft: "1 week",
-    participants: 15,
-    creator: "Builder_0x89",
-    isOfficial: false,
-    requirements: ["JavaScript/Python", "Discord API experience"],
-    deliverables: ["Working bot", "Setup instructions", "Feature documentation"]
-  },
-  {
-    id: "4",
-    title: "DAO Treasury Proposal Review",
-    description: "Review and provide feedback on the Q1 2024 treasury allocation proposal",
-    category: "governance",
-    xp: 50,
-    difficulty: "Beginner",
-    timeLeft: "18 hours",
-    participants: 89,
-    creator: "DAO Treasury",
-    isOfficial: true,
-    requirements: ["DAO membership", "Basic understanding of tokenomics"],
-    deliverables: ["Detailed review", "Vote submission", "Forum discussion participation"]
-  },
-  {
-    id: "5",
-    title: "Beginner Rust Workshop",
-    description: "Host a live workshop teaching Rust basics for blockchain development",
-    category: "education",
-    xp: 200,
-    difficulty: "Advanced",
-    timeLeft: "2 weeks",
-    participants: 5,
-    creator: "RustGuru_42",
-    isOfficial: false,
-    requirements: ["Expert Rust knowledge", "Teaching experience", "Video setup"],
-    deliverables: ["Live workshop", "Recording", "Exercise materials"]
-  }
-];
 
 export default function Missions() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMission, setSelectedMission] = useState<string | null>(null);
   const [submissionDialogOpen, setSubmissionDialogOpen] = useState(false);
-  const [missionToSubmit, setMissionToSubmit] = useState<typeof missions[0] | null>(null);
+  const [missionToSubmit, setMissionToSubmit] = useState<Mission | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  const { missions, loading, error, refetch } = useMissions();
+  const { progress } = useUserProgress();
+  const { isAuthenticated } = useWalletAuth();
+
+  // Check if user has completed onboarding
+  useEffect(() => {
+    const onboardingCompleted = localStorage.getItem('traitWarsOnboardingCompleted');
+    if (!onboardingCompleted && isAuthenticated) {
+      setShowOnboarding(true);
+    }
+  }, [isAuthenticated]);
 
   const filteredMissions = missions.filter(mission => {
     const matchesCategory = selectedCategory === "all" || mission.category === selectedCategory;
@@ -131,7 +77,10 @@ export default function Missions() {
 
   const selectedMissionData = missions.find(m => m.id === selectedMission);
 
-  const handleStartMission = (mission: typeof missions[0]) => {
+  const handleStartMission = (mission: Mission) => {
+    if (!isAuthenticated) {
+      return;
+    }
     setMissionToSubmit(mission);
     setSubmissionDialogOpen(true);
   };
@@ -207,130 +156,147 @@ export default function Missions() {
 
         {/* Missions Grid */}
         <div className="lg:col-span-3">
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-            {filteredMissions.map((mission) => {
-              const CategoryIcon = getCategoryIcon(mission.category);
-              return (
-                <Card 
-                  key={mission.id}
-                  className={`cursor-pointer transition-all border ${
-                    selectedMission === mission.id 
-                      ? 'border-primary shadow-neon bg-gradient-cyber' 
-                      : 'border-border hover:border-primary/50 bg-gradient-mission'
-                  }`}
-                  onClick={() => setSelectedMission(selectedMission === mission.id ? null : mission.id)}
-                >
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-2">
-                        <CategoryIcon className="h-4 w-4 text-primary" />
-                        {mission.isOfficial && (
-                          <Badge variant="secondary" className="bg-primary/20 text-primary text-xs">
-                            Official
-                          </Badge>
-                        )}
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <span className="ml-2 text-muted-foreground">Loading missions...</span>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-destructive mb-4">Error loading missions: {error}</p>
+              <Button onClick={refetch} variant="outline">
+                Try Again
+              </Button>
+            </div>
+          ) : filteredMissions.length === 0 ? (
+            <div className="text-center py-12">
+              <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">No missions found matching your criteria.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+              {filteredMissions.map((mission) => {
+                const CategoryIcon = getCategoryIcon(mission.category);
+                return (
+                  <Card 
+                    key={mission.id}
+                    className={`cursor-pointer transition-all border ${
+                      selectedMission === mission.id 
+                        ? 'border-primary shadow-neon bg-gradient-cyber' 
+                        : 'border-border hover:border-primary/50 bg-gradient-mission'
+                    }`}
+                    onClick={() => setSelectedMission(selectedMission === mission.id ? null : mission.id)}
+                  >
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-2">
+                          <CategoryIcon className="h-4 w-4 text-primary" />
+                          {mission.is_official && (
+                            <Badge variant="secondary" className="bg-primary/20 text-primary text-xs">
+                              Official
+                            </Badge>
+                          )}
+                        </div>
+                        <Badge className={`text-xs ${getDifficultyColor(mission.difficulty)}`}>
+                          {mission.difficulty}
+                        </Badge>
                       </div>
-                      <Badge className={`text-xs ${getDifficultyColor(mission.difficulty)}`}>
-                        {mission.difficulty}
-                      </Badge>
-                    </div>
-                    <CardTitle className="text-lg">{mission.title}</CardTitle>
-                  </CardHeader>
-                  
-                  <CardContent className="space-y-4">
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {mission.description}
-                    </p>
+                      <CardTitle className="text-lg">{mission.title}</CardTitle>
+                    </CardHeader>
                     
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Star className="h-3 w-3 text-xp-gold" />
-                        <span className="text-xp-gold font-medium">{mission.xp} XP</span>
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {mission.timeLeft}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Users className="h-3 w-3" />
-                        {mission.participants}
-                      </span>
-                    </div>
+                    <CardContent className="space-y-4">
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {mission.description}
+                      </p>
+                      
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Star className="h-3 w-3 text-xp-gold" />
+                          <span className="text-xp-gold font-medium">{mission.xp_reward} XP</span>
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {mission.expires_at ? new Date(mission.expires_at).toLocaleDateString() : 'No deadline'}
+                        </span>
+                      </div>
 
-                    {selectedMission === mission.id && (
-                      <div className="border-t border-border pt-4 space-y-4">
-                        <div>
-                          <h4 className="text-sm font-semibold mb-2">Requirements:</h4>
-                          <ul className="text-xs text-muted-foreground space-y-1">
-                            {mission.requirements.map((req, index) => (
-                              <li key={index} className="flex items-center gap-2">
-                                <div className="w-1 h-1 bg-primary rounded-full" />
-                                {req}
-                              </li>
-                            ))}
-                          </ul>
+                      {selectedMission === mission.id && (
+                        <div className="border-t border-border pt-4 space-y-4">
+                          <div>
+                            <h4 className="text-sm font-semibold mb-2">Requirements:</h4>
+                            <ul className="text-xs text-muted-foreground space-y-1">
+                              {mission.requirements.map((req, index) => (
+                                <li key={index} className="flex items-center gap-2">
+                                  <div className="w-1 h-1 bg-primary rounded-full" />
+                                  {req}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          
+                          <div>
+                            <h4 className="text-sm font-semibold mb-2">Deliverables:</h4>
+                            <ul className="text-xs text-muted-foreground space-y-1">
+                              {mission.deliverables.map((deliverable, index) => (
+                                <li key={index} className="flex items-center gap-2">
+                                  <div className="w-1 h-1 bg-accent rounded-full" />
+                                  {deliverable}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          
+                          <div className="flex gap-2">
+                            <Button 
+                              className="flex-1 bg-primary hover:bg-primary/90"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStartMission(mission);
+                              }}
+                              disabled={!isAuthenticated}
+                            >
+                              <Zap className="mr-2 h-4 w-4" />
+                              {isAuthenticated ? 'Start Mission' : 'Login to Start'}
+                            </Button>
+                            <Button variant="outline" className="border-accent text-accent hover:bg-accent/10">
+                              <TrendingUp className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
-                        
-                        <div>
-                          <h4 className="text-sm font-semibold mb-2">Deliverables:</h4>
-                          <ul className="text-xs text-muted-foreground space-y-1">
-                            {mission.deliverables.map((deliverable, index) => (
-                              <li key={index} className="flex items-center gap-2">
-                                <div className="w-1 h-1 bg-accent rounded-full" />
-                                {deliverable}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                        
+                      )}
+                      
+                      {selectedMission !== mission.id && (
                         <div className="flex gap-2">
                           <Button 
+                            size="sm" 
                             className="flex-1 bg-primary hover:bg-primary/90"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleStartMission(mission);
                             }}
+                            disabled={!isAuthenticated}
                           >
-                            <Zap className="mr-2 h-4 w-4" />
-                            Start Mission
+                            {isAuthenticated ? 'Start Mission' : 'Login to Start'}
                           </Button>
-                          <Button variant="outline" className="border-accent text-accent hover:bg-accent/10">
-                            <TrendingUp className="h-4 w-4" />
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="border-muted"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedMission(mission.id);
+                            }}
+                          >
+                            Details
                           </Button>
                         </div>
-                      </div>
-                    )}
-                    
-                    {selectedMission !== mission.id && (
-                      <div className="flex gap-2">
-                        <Button 
-                          size="sm" 
-                          className="flex-1 bg-primary hover:bg-primary/90"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleStartMission(mission);
-                          }}
-                        >
-                          Start Mission
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          className="border-muted"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedMission(mission.id);
-                          }}
-                        >
-                          Details
-                        </Button>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 
@@ -342,6 +308,12 @@ export default function Missions() {
           setSubmissionDialogOpen(false);
           setMissionToSubmit(null);
         }}
+      />
+
+      {/* User Onboarding */}
+      <UserOnboarding
+        isOpen={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
       />
     </div>
   );

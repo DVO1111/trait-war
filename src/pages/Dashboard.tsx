@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { HoneycombDemo } from "@/components/HoneycombDemo";
+import { UserOnboarding } from "@/components/UserOnboarding";
+import { useMissions } from "@/hooks/useMissions";
+import { useUserProgress } from "@/hooks/useUserProgress";
+import { useWalletAuth } from "@/hooks/useWalletAuth";
 import solanaLogo from "@/assets/solana-logo.svg";
 import superteamLogo from "@/assets/superteam-logo.png";
 import superteamNigeriaLogo from "@/assets/superteam-nigeria-logo.png";
@@ -20,57 +24,42 @@ import {
   CheckCircle,
   Calendar,
   Crown,
-  Medal
+  Medal,
+  Loader2
 } from "lucide-react";
 
 export default function Dashboard() {
   const [selectedMission, setSelectedMission] = useState<string | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const navigate = useNavigate();
+  
+  const { missions, loading: missionsLoading } = useMissions();
+  const { progress, loading: progressLoading } = useUserProgress();
+  const { isAuthenticated } = useWalletAuth();
 
-  // Mock data - would come from blockchain/API in real app
-  const dashboardData = {
-    todayXP: 127,
-    weeklyStreak: 5,
-    activeMissions: 3,
-    completedToday: 2,
-    featuredMissions: [
-      {
-        id: "1",
-        title: "Build a DeFi Tool",
-        category: "Tech",
-        xp: 150,
-        difficulty: "Advanced",
-        timeLeft: "2 days",
-        participants: 12,
-        description: "Create a decentralized finance tool that helps users manage their portfolios"
-      },
-      {
-        id: "2", 
-        title: "Write Solana Tutorial",
-        category: "Community",
-        xp: 75,
-        difficulty: "Intermediate", 
-        timeLeft: "5 days",
-        participants: 8,
-        description: "Create an educational tutorial for new Solana developers"
-      },
-      {
-        id: "3",
-        title: "Vote on Treasury Proposal",
-        category: "Governance",
-        xp: 25,
-        difficulty: "Beginner",
-        timeLeft: "12 hours",
-        participants: 156,
-        description: "Review and vote on the latest DAO treasury allocation proposal"
-      }
-    ],
-    recentActivity: [
-      { type: "mission_complete", text: "Completed 'Deploy Smart Contract'", xp: 100, time: "2h ago" },
-      { type: "level_up", text: "Reached Level 12!", xp: 0, time: "1d ago" },
-      { type: "trait_boost", text: "Builder trait increased to 85", xp: 0, time: "2d ago" }
-    ]
-  };
+  // Check if user has completed onboarding
+  useEffect(() => {
+    const onboardingCompleted = localStorage.getItem('traitWarsOnboardingCompleted');
+    if (!onboardingCompleted && isAuthenticated) {
+      setShowOnboarding(true);
+    }
+  }, [isAuthenticated]);
+
+  // Get featured missions (first 3 from database)
+  const featuredMissions = missions.slice(0, 3);
+
+  // Mock recent activity - would come from database in real app
+  const recentActivity = [
+    { type: "mission_complete", text: "Completed 'Deploy Smart Contract'", xp: 100, time: "2h ago" },
+    { type: "level_up", text: "Reached Level 12!", xp: 0, time: "1d ago" },
+    { type: "trait_boost", text: "Builder trait increased to 85", xp: 0, time: "2d ago" }
+  ];
+
+  // Calculate today's XP (mock for now)
+  const todayXP = 127;
+  const weeklyStreak = 5;
+  const activeMissions = 3;
+  const completedToday = 2;
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -155,8 +144,15 @@ export default function Dashboard() {
             <div className="flex items-center">
               <Star className="h-8 w-8 text-xp-gold" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">Today's XP</p>
-                <p className="text-2xl font-bold text-xp-gold">+{dashboardData.todayXP}</p>
+                <p className="text-sm font-medium text-muted-foreground">Total XP</p>
+                {progressLoading ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-sm text-muted-foreground">Loading...</span>
+                  </div>
+                ) : (
+                  <p className="text-2xl font-bold text-xp-gold">{progress?.total_xp || 0}</p>
+                )}
               </div>
             </div>
           </CardContent>
@@ -167,8 +163,15 @@ export default function Dashboard() {
             <div className="flex items-center">
               <TrendingUp className="h-8 w-8 text-accent" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">Weekly Streak</p>
-                <p className="text-2xl font-bold text-accent">{dashboardData.weeklyStreak} days</p>
+                <p className="text-sm font-medium text-muted-foreground">Current Level</p>
+                {progressLoading ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-sm text-muted-foreground">Loading...</span>
+                  </div>
+                ) : (
+                  <p className="text-2xl font-bold text-accent">Level {progress?.level || 1}</p>
+                )}
               </div>
             </div>
           </CardContent>
@@ -179,8 +182,15 @@ export default function Dashboard() {
             <div className="flex items-center">
               <Target className="h-8 w-8 text-primary" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">Active Missions</p>
-                <p className="text-2xl font-bold text-primary">{dashboardData.activeMissions}</p>
+                <p className="text-sm font-medium text-muted-foreground">Missions Completed</p>
+                {progressLoading ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-sm text-muted-foreground">Loading...</span>
+                  </div>
+                ) : (
+                  <p className="text-2xl font-bold text-primary">{progress?.missions_completed || 0}</p>
+                )}
               </div>
             </div>
           </CardContent>
@@ -191,8 +201,15 @@ export default function Dashboard() {
             <div className="flex items-center">
               <CheckCircle className="h-8 w-8 text-primary" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">Completed Today</p>
-                <p className="text-2xl font-bold text-primary">{dashboardData.completedToday}</p>
+                <p className="text-sm font-medium text-muted-foreground">Streak Days</p>
+                {progressLoading ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-sm text-muted-foreground">Loading...</span>
+                  </div>
+                ) : (
+                  <p className="text-2xl font-bold text-primary">{progress?.streak_days || 0}</p>
+                )}
               </div>
             </div>
           </CardContent>
@@ -210,57 +227,65 @@ export default function Dashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {dashboardData.featuredMissions.map((mission) => (
-                <Card 
-                  key={mission.id}
-                  className={`p-4 cursor-pointer transition-all border ${
-                    selectedMission === mission.id 
-                      ? 'border-primary shadow-neon' 
-                      : 'border-border hover:border-primary/50'
-                  }`}
-                  onClick={() => setSelectedMission(selectedMission === mission.id ? null : mission.id)}
-                >
-                  <Link to="/missions" className="block">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-semibold">{mission.title}</h3>
-                          <Badge variant="secondary" className={getDifficultyColor(mission.difficulty)}>
-                            {mission.difficulty}
-                          </Badge>
+              {missionsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  <span className="ml-2 text-muted-foreground">Loading missions...</span>
+                </div>
+              ) : featuredMissions.length === 0 ? (
+                <div className="text-center py-8">
+                  <Target className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-muted-foreground">No missions available</p>
+                </div>
+              ) : (
+                featuredMissions.map((mission) => (
+                  <Card 
+                    key={mission.id}
+                    className={`p-4 cursor-pointer transition-all border ${
+                      selectedMission === mission.id 
+                        ? 'border-primary shadow-neon' 
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                    onClick={() => setSelectedMission(selectedMission === mission.id ? null : mission.id)}
+                  >
+                    <Link to="/missions" className="block">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="font-semibold">{mission.title}</h3>
+                            <Badge variant="secondary" className={getDifficultyColor(mission.difficulty)}>
+                              {mission.difficulty}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            {mission.description}
+                          </p>
+                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Star className="h-3 w-3" />
+                              {mission.xp_reward} XP
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {mission.expires_at ? new Date(mission.expires_at).toLocaleDateString() : 'No deadline'}
+                            </span>
+                          </div>
                         </div>
-                        <p className="text-sm text-muted-foreground mb-3">
-                          {mission.description}
-                        </p>
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Star className="h-3 w-3" />
-                            {mission.xp} XP
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {mission.timeLeft}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Users className="h-3 w-3" />
-                            {mission.participants} participants
-                          </span>
-                        </div>
+                        <Button 
+                          size="sm" 
+                          className="ml-4 bg-primary hover:bg-primary/90"
+                          onClick={(e) => e.stopPropagation()}
+                          asChild
+                        >
+                          <Link to="/missions">
+                            Start <ArrowRight className="ml-1 h-3 w-3" />
+                          </Link>
+                        </Button>
                       </div>
-                      <Button 
-                        size="sm" 
-                        className="ml-4 bg-primary hover:bg-primary/90"
-                        onClick={(e) => e.stopPropagation()}
-                        asChild
-                      >
-                        <Link to="/missions">
-                          Start <ArrowRight className="ml-1 h-3 w-3" />
-                        </Link>
-                      </Button>
-                    </div>
-                  </Link>
-                </Card>
-              ))}
+                    </Link>
+                  </Card>
+                ))
+              )}
               
               <div className="text-center pt-4">
                 <Button 
@@ -350,7 +375,7 @@ export default function Dashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {dashboardData.recentActivity.map((activity, index) => (
+              {recentActivity.map((activity, index) => (
                 <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-secondary/50">
                   <div className="mt-1">
                     {activity.type === 'mission_complete' && <CheckCircle className="h-4 w-4 text-primary" />}
@@ -380,6 +405,12 @@ export default function Dashboard() {
           </Card>
         </div>
       </div>
+
+      {/* User Onboarding */}
+      <UserOnboarding
+        isOpen={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
+      />
     </div>
   );
 }

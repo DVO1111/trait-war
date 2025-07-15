@@ -14,6 +14,119 @@ export type Database = {
   }
   public: {
     Tables: {
+      mission_submissions: {
+        Row: {
+          additional_notes: string | null
+          created_at: string
+          demo_url: string | null
+          description: string
+          documentation_url: string | null
+          github_url: string | null
+          id: string
+          mission_id: string | null
+          review_notes: string | null
+          reviewed_by: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string | null
+          xp_awarded: number | null
+        }
+        Insert: {
+          additional_notes?: string | null
+          created_at?: string
+          demo_url?: string | null
+          description: string
+          documentation_url?: string | null
+          github_url?: string | null
+          id?: string
+          mission_id?: string | null
+          review_notes?: string | null
+          reviewed_by?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id?: string | null
+          xp_awarded?: number | null
+        }
+        Update: {
+          additional_notes?: string | null
+          created_at?: string
+          demo_url?: string | null
+          description?: string
+          documentation_url?: string | null
+          github_url?: string | null
+          id?: string
+          mission_id?: string | null
+          review_notes?: string | null
+          reviewed_by?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+          xp_awarded?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_submissions_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      missions: {
+        Row: {
+          category: string
+          created_at: string
+          creator_id: string | null
+          deliverables: string[] | null
+          description: string
+          difficulty: string
+          expires_at: string | null
+          id: string
+          is_official: boolean | null
+          max_participants: number | null
+          requirements: string[] | null
+          title: string
+          updated_at: string
+          xp_reward: number
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          creator_id?: string | null
+          deliverables?: string[] | null
+          description: string
+          difficulty: string
+          expires_at?: string | null
+          id?: string
+          is_official?: boolean | null
+          max_participants?: number | null
+          requirements?: string[] | null
+          title: string
+          updated_at?: string
+          xp_reward?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          creator_id?: string | null
+          deliverables?: string[] | null
+          description?: string
+          difficulty?: string
+          expires_at?: string | null
+          id?: string
+          is_official?: boolean | null
+          max_participants?: number | null
+          requirements?: string[] | null
+          title?: string
+          updated_at?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -53,12 +166,92 @@ export type Database = {
         }
         Relationships: []
       }
+      user_mission_progress: {
+        Row: {
+          completed_at: string | null
+          id: string
+          mission_id: string | null
+          started_at: string
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          id?: string
+          mission_id?: string | null
+          started_at?: string
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          id?: string
+          mission_id?: string | null
+          started_at?: string
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_mission_progress_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_progress: {
+        Row: {
+          created_at: string
+          current_level_xp: number | null
+          id: string
+          last_activity_date: string | null
+          level: number | null
+          missions_completed: number | null
+          streak_days: number | null
+          total_xp: number | null
+          traits: Json | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          current_level_xp?: number | null
+          id?: string
+          last_activity_date?: string | null
+          level?: number | null
+          missions_completed?: number | null
+          streak_days?: number | null
+          total_xp?: number | null
+          traits?: Json | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          current_level_xp?: number | null
+          id?: string
+          last_activity_date?: string | null
+          level?: number | null
+          missions_completed?: number | null
+          streak_days?: number | null
+          total_xp?: number | null
+          traits?: Json | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_xp_for_level: {
+        Args: { level_num: number }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
