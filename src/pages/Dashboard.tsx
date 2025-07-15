@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -218,48 +218,47 @@ export default function Dashboard() {
                       ? 'border-primary shadow-neon' 
                       : 'border-border hover:border-primary/50'
                   }`}
-                   onClick={() => {
-                     setSelectedMission(selectedMission === mission.id ? null : mission.id);
-                     navigate('/missions');
-                   }}
+                  onClick={() => setSelectedMission(selectedMission === mission.id ? null : mission.id)}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-semibold">{mission.title}</h3>
-                        <Badge variant="secondary" className={getDifficultyColor(mission.difficulty)}>
-                          {mission.difficulty}
-                        </Badge>
+                  <Link to="/missions" className="block">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="font-semibold">{mission.title}</h3>
+                          <Badge variant="secondary" className={getDifficultyColor(mission.difficulty)}>
+                            {mission.difficulty}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          {mission.description}
+                        </p>
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Star className="h-3 w-3" />
+                            {mission.xp} XP
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {mission.timeLeft}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Users className="h-3 w-3" />
+                            {mission.participants} participants
+                          </span>
+                        </div>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        {mission.description}
-                      </p>
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Star className="h-3 w-3" />
-                          {mission.xp} XP
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {mission.timeLeft}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Users className="h-3 w-3" />
-                          {mission.participants} participants
-                        </span>
-                      </div>
+                      <Button 
+                        size="sm" 
+                        className="ml-4 bg-primary hover:bg-primary/90"
+                        onClick={(e) => e.stopPropagation()}
+                        asChild
+                      >
+                        <Link to="/missions">
+                          Start <ArrowRight className="ml-1 h-3 w-3" />
+                        </Link>
+                      </Button>
                     </div>
-                    <Button 
-                      size="sm" 
-                      className="ml-4 bg-primary hover:bg-primary/90"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate('/missions');
-                      }}
-                    >
-                      Start <ArrowRight className="ml-1 h-3 w-3" />
-                    </Button>
-                  </div>
+                  </Link>
                 </Card>
               ))}
               
@@ -267,9 +266,11 @@ export default function Dashboard() {
                 <Button 
                   variant="outline" 
                   className="border-primary text-primary hover:bg-primary/10"
-                  onClick={() => navigate('/missions')}
+                  asChild
                 >
-                  View All Missions
+                  <Link to="/missions">
+                    View All Missions
+                  </Link>
                 </Button>
               </div>
             </CardContent>
@@ -330,9 +331,11 @@ export default function Dashboard() {
                   variant="ghost" 
                   size="sm" 
                   className="text-muted-foreground"
-                  onClick={() => navigate('/leaderboard')}
+                  asChild
                 >
-                  View Full Leaderboard
+                  <Link to="/leaderboard">
+                    View Full Leaderboard
+                  </Link>
                 </Button>
               </div>
             </CardContent>
