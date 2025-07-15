@@ -20,6 +20,7 @@ import { Progress } from "@/components/ui/progress";
 import { WalletButton } from "@/components/WalletButton";
 import { SettingsDialog } from "@/components/SettingsDialog";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserProgress } from "@/hooks/useUserProgress";
 
 interface GameLayoutProps {
   children: React.ReactNode;
@@ -40,6 +41,7 @@ export function GameLayout({ children }: GameLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, loading, signOut, isAuthenticated, displayName } = useAuth();
+  const { progress, getXPToNextLevel, getProgressToNextLevel } = useUserProgress();
 
 
 
@@ -67,14 +69,16 @@ export function GameLayout({ children }: GameLayoutProps) {
     return null;
   }
 
-  // Mock player data - in real app this would come from blockchain/state
+  // Get real player data from progress
   const playerData = {
-    username: "Builder_0x42",
-    level: 12,
-    xp: 2847,
-    xpToNext: 3500,
+    username: displayName,
+    level: progress?.level || 1,
+    xp: progress?.total_xp || 0,
+    currentLevelXP: progress?.current_level_xp || 0,
+    xpToNext: getXPToNextLevel(),
+    progressToNext: getProgressToNextLevel(),
     traits: {
-      builder: 85,
+      builder: 85, // These would come from blockchain/missions in the future
       community: 67,
       governance: 42
     }
@@ -118,12 +122,16 @@ export function GameLayout({ children }: GameLayoutProps) {
               <div className="space-y-2">
                 <div className="flex justify-between text-xs">
                   <span>XP Progress</span>
-                  <span>{playerData.xp} / {playerData.xpToNext}</span>
+                  <span>{playerData.currentLevelXP} / {playerData.xpToNext}</span>
                 </div>
                 <Progress 
-                  value={(playerData.xp / playerData.xpToNext) * 100} 
+                  value={playerData.progressToNext} 
                   className="h-2 bg-secondary"
                 />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Total XP: {playerData.xp.toLocaleString()}</span>
+                  <span>Level {playerData.level}</span>
+                </div>
               </div>
             </Card>
           )}
