@@ -460,21 +460,22 @@ export default function DAO() {
                   </div>
                 )}
                 
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="h-3 w-3" />
-                    Requires {proposal.requiredXP} XP to vote
-                  </div>
-                  {isAuthenticated && (
-                    <div className="flex items-center gap-2">
-                      <Zap className="h-3 w-3" />
-                      Your XP: {userXP}
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                 <div className="flex items-center justify-between text-xs text-muted-foreground">
+                   <div className="flex items-center gap-2">
+                     <AlertCircle className="h-3 w-3" />
+                     Requires {proposal.requiredXP} XP to vote
+                   </div>
+                   {isAuthenticated && (
+                     <div className="flex items-center gap-2">
+                       <Zap className="h-3 w-3" />
+                       Your XP: {userXP}
+                     </div>
+                   )}
+                 </div>
+               </CardContent>
+             </Card>
+           );
+         })}
         </TabsContent>
 
         <TabsContent value="leaderboard" className="space-y-4">
