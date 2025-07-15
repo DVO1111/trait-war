@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
+import { useWalletFirstAuth } from '@/hooks/useWalletFirstAuth';
 import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
@@ -8,12 +8,12 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { isAuthenticated, loading } = useSupabaseAuth();
+  const { isAuthenticated, loading } = useWalletFirstAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
-      navigate('/auth');
+      navigate('/wallet-auth');
     }
   }, [loading, isAuthenticated, navigate]);
 
