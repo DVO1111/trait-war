@@ -11,11 +11,8 @@ interface Props {
 }
 
 export const WalletConnectionProvider: FC<Props> = ({ children }) => {
-  // The network can be set to 'devnet', 'testnet', or 'mainnet-beta'.
-  const network = WalletAdapterNetwork.Devnet;
-
-  // You can also provide a custom RPC endpoint.
-  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+  // Use Honeycomb's Honeynet for testing - has unlimited SOLs for testing
+  const endpoint = useMemo(() => "https://rpc.test.honeycombprotocol.com", []);
 
   const wallets = useMemo(
     () => [

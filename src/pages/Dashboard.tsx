@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { HoneycombDemo } from "@/components/HoneycombDemo";
 import {
   Target,
   Trophy,
@@ -90,6 +91,9 @@ export default function Dashboard() {
           Quick Mission
         </Button>
       </div>
+
+      {/* Honeycomb Protocol Integration */}
+      <HoneycombDemo />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
