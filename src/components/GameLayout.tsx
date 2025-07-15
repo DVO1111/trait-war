@@ -19,7 +19,7 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { WalletButton } from "@/components/WalletButton";
 import { SettingsDialog } from "@/components/SettingsDialog";
-import { useAuth } from "@/hooks/useAuth";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useUserProgress } from "@/hooks/useUserProgress";
 
 interface GameLayoutProps {
@@ -40,7 +40,7 @@ export function GameLayout({ children }: GameLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
-  const { profile, loading, signOut, isAuthenticated, displayName } = useAuth();
+  const { isAuthenticated, loading, user } = useSupabaseAuth();
   const { progress, getXPNeededForNextLevel, getProgressToNextLevel, loading: progressLoading } = useUserProgress();
 
 
@@ -70,8 +70,9 @@ export function GameLayout({ children }: GameLayoutProps) {
   }
 
   // Get real player data from progress with fallbacks
+  const displayName = user?.user_metadata?.display_name || user?.user_metadata?.username || user?.email?.split('@')[0] || "Builder";
   const playerData = {
-    username: displayName || "Builder",
+    username: displayName,
     level: progress?.level || 1,
     xp: progress?.total_xp || 0,
     currentLevelXP: progress?.current_level_xp || 0,
@@ -200,7 +201,12 @@ export function GameLayout({ children }: GameLayoutProps) {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={signOut}
+                onClick={async () => {
+                  await import('@/integrations/supabase/client').then(({ supabase }) => {
+                    supabase.auth.signOut();
+                  });
+                  navigate('/auth');
+                }}
                 className="text-muted-foreground hover:text-foreground"
                 title="Sign out"
               >
