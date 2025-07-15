@@ -11,7 +11,8 @@ import {
   Menu,
   X,
   LogOut,
-  User
+  User,
+  Crown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -27,8 +28,9 @@ interface GameLayoutProps {
 const navigation = [
   { name: "Dashboard", href: "/", icon: Home },
   { name: "Missions", href: "/missions", icon: Target },
-  { name: "DAO", href: "/dao", icon: Users },
   { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
+  { name: "Creator", href: "/creator", icon: Crown },
+  { name: "DAO", href: "/dao", icon: Users },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 

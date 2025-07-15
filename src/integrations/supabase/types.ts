@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      creator_notifications: {
+        Row: {
+          created_at: string
+          creator_id: string | null
+          id: string
+          is_read: boolean | null
+          mission_id: string | null
+          notification_type: string
+          submission_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          creator_id?: string | null
+          id?: string
+          is_read?: boolean | null
+          mission_id?: string | null
+          notification_type: string
+          submission_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string | null
+          id?: string
+          is_read?: boolean | null
+          mission_id?: string | null
+          notification_type?: string
+          submission_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_notifications_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_notifications_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "mission_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mission_submissions: {
         Row: {
           additional_notes: string | null
@@ -24,7 +69,9 @@ export type Database = {
           github_url: string | null
           id: string
           mission_id: string | null
+          review_feedback: string | null
           review_notes: string | null
+          reviewed_at: string | null
           reviewed_by: string | null
           status: string
           title: string
@@ -41,7 +88,9 @@ export type Database = {
           github_url?: string | null
           id?: string
           mission_id?: string | null
+          review_feedback?: string | null
           review_notes?: string | null
+          reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
           title: string
@@ -58,7 +107,9 @@ export type Database = {
           github_url?: string | null
           id?: string
           mission_id?: string | null
+          review_feedback?: string | null
           review_notes?: string | null
+          reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
           title?: string
