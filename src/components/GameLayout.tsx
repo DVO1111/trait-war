@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { BackgroundMusic } from "./BackgroundMusic";
 import { 
   Home, 
   Target, 
@@ -42,16 +41,7 @@ export function GameLayout({ children }: GameLayoutProps) {
   const navigate = useNavigate();
   const { profile, loading, signOut, isAuthenticated, displayName } = useAuth();
 
-  // Background music settings
-  const [musicSettings, setMusicSettings] = useState(() => {
-    const saved = localStorage.getItem('superteam-music-settings');
-    return saved ? JSON.parse(saved) : { enabled: true, volume: 30 };
-  });
 
-  // Save music settings to localStorage
-  useEffect(() => {
-    localStorage.setItem('superteam-music-settings', JSON.stringify(musicSettings));
-  }, [musicSettings]);
 
   // Redirect to auth if not authenticated
   useEffect(() => {
@@ -217,12 +207,6 @@ export function GameLayout({ children }: GameLayoutProps) {
           {children}
         </main>
       </div>
-      
-      {/* Background Music Player */}
-      <BackgroundMusic 
-        isEnabled={musicSettings.enabled} 
-        volume={musicSettings.volume}
-      />
     </div>
   );
 }
