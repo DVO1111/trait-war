@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { HoneycombDemo } from "@/components/HoneycombDemo";
+import solanaLogo from "@/assets/solana-logo.svg";
+import superteamLogo from "@/assets/superteam-logo.png";
 import {
   Target,
   Trophy,
@@ -14,7 +16,9 @@ import {
   ArrowRight,
   TrendingUp,
   CheckCircle,
-  Calendar
+  Calendar,
+  Crown,
+  Medal
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -72,6 +76,52 @@ export default function Dashboard() {
       case "Advanced": return "bg-destructive/20 text-destructive";
       default: return "bg-secondary text-secondary-foreground";
     }
+  };
+
+  // Top 3 leaderboard data
+  const topBuilders = [
+    { 
+      rank: 1, 
+      username: "CryptoBuilder42", 
+      xp: 15647, 
+      level: 47, 
+      avatar: "🏆"
+    },
+    { 
+      rank: 2, 
+      username: "DevMaster", 
+      xp: 14523, 
+      level: 45, 
+      avatar: "🥈"
+    },
+    { 
+      rank: 3, 
+      username: "TraitHunter", 
+      xp: 13891, 
+      level: 43, 
+      avatar: "🥉"
+    }
+  ];
+
+  const getBadgeLogo = (rank: number) => {
+    if (rank === 1) return solanaLogo;
+    if (rank === 2) return superteamLogo;
+    if (rank === 3) return solanaLogo;
+    return null;
+  };
+
+  const getRankIcon = (rank: number) => {
+    if (rank === 1) return <Crown className="h-4 w-4 text-xp-gold" />;
+    if (rank === 2) return <Medal className="h-4 w-4 text-accent" />;
+    if (rank === 3) return <Trophy className="h-4 w-4 text-primary" />;
+    return null;
+  };
+
+  const getRankStyle = (rank: number) => {
+    if (rank === 1) return 'bg-gradient-to-r from-xp-gold/20 to-xp-gold/10 border-xp-gold/30';
+    if (rank === 2) return 'bg-gradient-to-r from-accent/20 to-accent/10 border-accent/30';
+    if (rank === 3) return 'bg-gradient-to-r from-primary/20 to-primary/10 border-primary/30';
+    return 'bg-secondary/50';
   };
 
   return (
@@ -212,8 +262,60 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Recent Activity */}
-        <div>
+        {/* Right Sidebar */}
+        <div className="space-y-6">
+          {/* Top Builders */}
+          <Card className="bg-gradient-mission border-border">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Trophy className="mr-2 h-5 w-5 text-xp-gold" />
+                Top Builders
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {topBuilders.map((builder) => (
+                <div 
+                  key={builder.rank}
+                  className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${getRankStyle(builder.rank)}`}
+                >
+                  <div className="flex items-center gap-2">
+                    {getRankIcon(builder.rank)}
+                    <span className="text-2xl">{builder.avatar}</span>
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm truncate">{builder.username}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Level {builder.level} • {builder.xp.toLocaleString()} XP
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    {getBadgeLogo(builder.rank) && (
+                      <div className="relative">
+                        <img 
+                          src={getBadgeLogo(builder.rank)!} 
+                          alt={builder.rank === 2 ? "Superteam" : "Solana"} 
+                          className="w-6 h-6"
+                        />
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full border border-background flex items-center justify-center">
+                          <span className="text-xs font-bold text-primary-foreground">{builder.rank}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              
+              <div className="text-center pt-2">
+                <Button variant="ghost" size="sm" className="text-muted-foreground">
+                  View Full Leaderboard
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recent Activity */}
           <Card className="bg-gradient-mission border-border">
             <CardHeader>
               <CardTitle className="flex items-center">
