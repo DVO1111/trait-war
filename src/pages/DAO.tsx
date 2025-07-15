@@ -340,7 +340,13 @@ export default function DAO() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {daoData.leaderboard.map((player, index) => (
+              {[
+                { rank: 1, username: "CryptoBuilder42", xp: 15647, traits: { builder: 95, community: 89, governance: 78 } },
+                { rank: 2, username: "DevMaster", xp: 14523, traits: { builder: 87, community: 95, governance: 92 } },
+                { rank: 3, username: "TraitHunter", xp: 13891, traits: { builder: 92, community: 76, governance: 85 } },
+                { rank: 4, username: "BlockchainWiz", xp: 12456, traits: { builder: 68, community: 97, governance: 73 } },
+                { rank: 5, username: "Builder_0x42", xp: 11234, traits: { builder: 85, community: 67, governance: 42 } }
+              ].map((player, index) => (
                 <div 
                   key={player.rank}
                   className={`flex items-center gap-4 p-4 rounded-lg transition-all ${

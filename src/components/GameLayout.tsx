@@ -13,6 +13,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { WalletButton } from "@/components/WalletButton";
+import { SettingsDialog } from "@/components/SettingsDialog";
 
 interface GameLayoutProps {
   children: React.ReactNode;
@@ -139,6 +141,20 @@ export function GameLayout({ children }: GameLayoutProps) {
 
       {/* Main Content */}
       <div className={`transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-16'}`}>
+        {/* Top Header Bar */}
+        <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <h1 className="text-xl font-bold text-foreground">Trait Wars</h1>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <WalletButton />
+              <SettingsDialog />
+            </div>
+          </div>
+        </header>
+        
         <main className="min-h-screen">
           {children}
         </main>
