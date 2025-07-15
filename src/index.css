@@ -8,35 +8,54 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Gaming Dark Theme */
+    --background: 220 26% 8%;
+    --foreground: 210 40% 98%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 225 25% 10%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 225 25% 10%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 157 97% 45%;
+    --primary-foreground: 220 26% 8%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 225 25% 15%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 225 25% 15%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 271 81% 56%;
+    --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 225 25% 18%;
+    --input: 225 25% 15%;
+    --ring: 157 97% 45%;
 
-    --radius: 0.5rem;
+    /* Gaming-specific colors */
+    --neon-cyan: 180 100% 50%;
+    --neon-purple: 271 81% 56%;
+    --neon-green: 157 97% 45%;
+    --xp-gold: 45 93% 47%;
+    --energy-blue: 217 92% 60%;
+    
+    /* Gradients */
+    --gradient-cyber: linear-gradient(135deg, hsl(157 97% 45% / 0.2), hsl(271 81% 56% / 0.2));
+    --gradient-xp: linear-gradient(90deg, hsl(45 93% 47%), hsl(157 97% 45%));
+    --gradient-mission: linear-gradient(135deg, hsl(225 25% 15%), hsl(225 25% 20%));
+    --gradient-dao: linear-gradient(135deg, hsl(271 81% 56% / 0.1), hsl(157 97% 45% / 0.1));
+    
+    /* Shadows & Effects */
+    --shadow-neon: 0 0 20px hsl(157 97% 45% / 0.3);
+    --shadow-cyber: 0 4px 20px hsl(271 81% 56% / 0.2);
+    --shadow-mission: 0 8px 32px hsl(220 26% 8% / 0.5);
+
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
 
