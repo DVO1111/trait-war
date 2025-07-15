@@ -47,9 +47,9 @@ export const useUserProgress = () => {
           .from('user_progress')
           .insert({
             user_id: user.id,
-            total_xp: 0,
+            total_xp: 200, // Starting XP bonus for new users
             level: 1,
-            current_level_xp: 0,
+            current_level_xp: 200, // This will be recalculated by the trigger
             missions_completed: 0,
             streak_days: 0,
             traits: {},
