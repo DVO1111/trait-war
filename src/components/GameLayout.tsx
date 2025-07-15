@@ -35,7 +35,7 @@ export function GameLayout({ children }: GameLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, profile, loading, signOut, isAuthenticated } = useAuth();
+  const { profile, loading, signOut, isAuthenticated, displayName } = useAuth();
 
   // Redirect to auth if not authenticated
   useEffect(() => {
@@ -105,7 +105,7 @@ export function GameLayout({ children }: GameLayoutProps) {
                 <div className="w-12 h-12 bg-primary rounded-full mx-auto mb-2 flex items-center justify-center shadow-neon">
                   <Zap className="h-6 w-6 text-primary-foreground" />
                 </div>
-                <h3 className="font-semibold text-sm">{profile?.display_name || profile?.username || user?.email}</h3>
+                <h3 className="font-semibold text-sm">{displayName}</h3>
                 <p className="text-xs text-muted-foreground">Level {playerData.level}</p>
               </div>
               
@@ -180,7 +180,7 @@ export function GameLayout({ children }: GameLayoutProps) {
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <User className="h-4 w-4" />
-                {profile?.display_name || profile?.username || user?.email}
+                {displayName}
               </div>
               <WalletButton />
               <Button 

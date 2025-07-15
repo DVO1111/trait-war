@@ -21,9 +21,10 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          last_login: string | null
           updated_at: string
-          user_id: string
           username: string | null
+          wallet_address: string
           warrior_count: number | null
         }
         Insert: {
@@ -32,9 +33,10 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          last_login?: string | null
           updated_at?: string
-          user_id: string
           username?: string | null
+          wallet_address: string
           warrior_count?: number | null
         }
         Update: {
@@ -43,9 +45,10 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          last_login?: string | null
           updated_at?: string
-          user_id?: string
           username?: string | null
+          wallet_address?: string
           warrior_count?: number | null
         }
         Relationships: []
