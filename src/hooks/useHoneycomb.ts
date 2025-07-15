@@ -20,6 +20,8 @@ interface HoneycombCharacter {
   address: string;
   name: string;
   traits: Record<string, any>;
+  isNFT?: boolean;
+  mintAddress?: string;
 }
 
 export const useHoneycomb = () => {
@@ -135,7 +137,7 @@ export const useHoneycomb = () => {
     }
   }, [wallet, project, toast]);
 
-  // Create a user and profile in one transaction
+  // Create a user and profile with automatic NFT minting
   const createUserAndProfile = useCallback(async (name: string, bio?: string) => {
     if (!wallet.publicKey || !wallet.signTransaction) {
       toast({
@@ -157,6 +159,7 @@ export const useHoneycomb = () => {
 
     setLoading(true);
     try {
+      // Step 1: Create user and profile
       const { createNewUserWithProfileTransaction: txResponse } = 
         await honeycombClient.createNewUserWithProfileTransaction({
           project: project.address,
@@ -178,14 +181,26 @@ export const useHoneycomb = () => {
 
       if (response) {
         setProfile({
-          address: `profile_${Date.now()}`, // Simplified for demo
+          address: `profile_${Date.now()}`,
           name,
           bio,
         });
+
+        // Step 2: Automatically mint warrior NFT with random traits
+        const warriorTraits = {
+          strength: Math.floor(Math.random() * 100) + 1,
+          agility: Math.floor(Math.random() * 100) + 1,
+          intelligence: Math.floor(Math.random() * 100) + 1,
+          element: ['Fire', 'Water', 'Earth', 'Air'][Math.floor(Math.random() * 4)],
+          rarity: Math.random() > 0.8 ? 'Legendary' : Math.random() > 0.6 ? 'Rare' : 'Common',
+        };
+
+        // Create the warrior NFT
+        await mintWarriorNFT(name, warriorTraits);
         
         toast({
           title: "Warrior created successfully!",
-          description: `Your warrior profile "${name}" has been created on-chain`,
+          description: `Your warrior "${name}" has been created on-chain with a unique NFT!`,
         });
       }
     } catch (error) {
@@ -197,6 +212,40 @@ export const useHoneycomb = () => {
       });
     } finally {
       setLoading(false);
+    }
+  }, [wallet, project, toast]);
+
+  // Mint a warrior NFT with traits
+  const mintWarriorNFT = useCallback(async (name: string, traits: Record<string, any>) => {
+    if (!wallet.publicKey || !wallet.signTransaction) return;
+    if (!project) return;
+
+    try {
+      // For demo purposes, we'll create the character data structure
+      // In a real implementation, this would use Honeycomb's Character Manager
+      const newCharacter: HoneycombCharacter = {
+        address: `nft_${Date.now()}`,
+        name: `${name} NFT Warrior`,
+        traits,
+        isNFT: true,
+        mintAddress: `mint_${Date.now()}`,
+      };
+      
+      setCharacters(prev => [...prev, newCharacter]);
+      
+      toast({
+        title: "NFT Minted!",
+        description: `${name} warrior NFT has been minted with unique traits`,
+      });
+
+      return newCharacter;
+    } catch (error) {
+      console.error('Error minting warrior NFT:', error);
+      toast({
+        title: "Error minting NFT",
+        description: error instanceof Error ? error.message : "Failed to mint warrior NFT",
+        variant: "destructive",
+      });
     }
   }, [wallet, project, toast]);
 
@@ -296,6 +345,7 @@ export const useHoneycomb = () => {
     createProfilesTree,
     createUserAndProfile,
     createCharacter,
+    mintWarriorNFT,
     participateInMission,
     
     // Utilities

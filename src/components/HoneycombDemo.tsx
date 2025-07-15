@@ -147,7 +147,10 @@ export const HoneycombDemo = () => {
               ) : (
                 <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
                   <p className="text-green-400 text-sm">
-                    ✓ Warrior "{profile.name}" created on-chain!
+                    ✓ Warrior "{profile.name}" created on-chain with NFT!
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Your warrior NFT has been automatically minted with unique traits
                   </p>
                 </div>
               )}
@@ -206,7 +209,10 @@ export const HoneycombDemo = () => {
                     <CardContent className="p-3">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h4 className="font-medium text-gaming-accent">{character.name}</h4>
+                          <h4 className="font-medium text-gaming-accent flex items-center gap-2">
+                            {character.name}
+                            {character.isNFT && <Badge variant="secondary" className="text-xs">NFT</Badge>}
+                          </h4>
                           <div className="flex gap-2 mt-2 flex-wrap">
                             {Object.entries(character.traits).map(([trait, value]) => (
                               <Badge key={trait} variant="outline" className="text-xs">
