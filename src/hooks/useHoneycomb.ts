@@ -43,7 +43,7 @@ export const useHoneycomb = () => {
         description: "Please connect your wallet first",
         variant: "destructive",
       });
-      return;
+      return null;
     }
 
     setLoading(true);
@@ -61,16 +61,20 @@ export const useHoneycomb = () => {
       );
 
       if (response) {
-        setProject({
+        const newProject = {
           address: projectAddress,
           name: TRAIT_WARS_PROJECT_NAME,
-        });
+        };
+        setProject(newProject);
         
         toast({
           title: "Project created successfully!",
           description: `Trait Wars project created on-chain`,
         });
+        
+        return newProject;
       }
+      return null;
     } catch (error) {
       console.error('Error creating project:', error);
       toast({
@@ -78,29 +82,31 @@ export const useHoneycomb = () => {
         description: error instanceof Error ? error.message : "Unknown error occurred",
         variant: "destructive",
       });
+      return null;
     } finally {
       setLoading(false);
     }
   }, [wallet, toast]);
 
   // Create a profiles tree first (required before creating profiles)
-  const createProfilesTree = useCallback(async () => {
+  const createProfilesTree = useCallback(async (projectToUse?: HoneycombProject) => {
     if (!wallet.publicKey || !wallet.signTransaction) {
       toast({
         title: "Wallet not connected",
         description: "Please connect your wallet first",
         variant: "destructive",
       });
-      return;
+      return null;
     }
 
-    if (!project) {
+    const targetProject = projectToUse || project;
+    if (!targetProject) {
       toast({
         title: "No project found",
         description: "Please create a project first",
         variant: "destructive",
       });
-      return;
+      return null;
     }
 
     setLoading(true);
@@ -108,7 +114,7 @@ export const useHoneycomb = () => {
       const { createCreateProfilesTreeTransaction: txResponse } = 
         await honeycombClient.createCreateProfilesTreeTransaction({
           payer: wallet.publicKey.toBase58(),
-          project: project.address,
+          project: targetProject.address,
           treeConfig: {
             basic: {
               numAssets: 10000, // Allow up to 10,000 profiles
@@ -127,7 +133,9 @@ export const useHoneycomb = () => {
           title: "Profiles tree created!",
           description: "Now users can create profiles for this project",
         });
+        return true;
       }
+      return false;
     } catch (error) {
       console.error('Error creating profiles tree:', error);
       toast({
@@ -135,20 +143,21 @@ export const useHoneycomb = () => {
         description: error instanceof Error ? error.message : "Unknown error occurred",
         variant: "destructive",
       });
+      return false;
     } finally {
       setLoading(false);
     }
   }, [wallet, project, toast]);
 
   // Create a user and profile with automatic NFT minting
-  const createUserAndProfile = useCallback(async (name: string, bio?: string) => {
+  const createUserAndProfile = useCallback(async (name: string, bio?: string, projectToUse?: HoneycombProject) => {
     if (!isAuthenticated || !walletAddress) {
       toast({
         title: "Authentication required",
         description: "Please connect and authenticate your wallet first",
         variant: "destructive",
       });
-      return;
+      return null;
     }
 
     if (!wallet.publicKey || !wallet.signTransaction) {
@@ -157,16 +166,17 @@ export const useHoneycomb = () => {
         description: "Please connect your wallet first",
         variant: "destructive",
       });
-      return;
+      return null;
     }
 
-    if (!project) {
+    const targetProject = projectToUse || project;
+    if (!targetProject) {
       toast({
         title: "No project found",
         description: "Please create a project first",
         variant: "destructive",
       });
-      return;
+      return null;
     }
 
     setLoading(true);
@@ -174,7 +184,7 @@ export const useHoneycomb = () => {
       // Step 1: Create user and profile
       const { createNewUserWithProfileTransaction: txResponse } = 
         await honeycombClient.createNewUserWithProfileTransaction({
-          project: project.address,
+          project: targetProject.address,
           wallet: wallet.publicKey.toBase58(),
           payer: wallet.publicKey.toBase58(),
           profileIdentity: "main",
@@ -192,11 +202,12 @@ export const useHoneycomb = () => {
       );
 
       if (response) {
-        setHoneycombProfile({
+        const newProfile = {
           address: `profile_${Date.now()}`,
           name,
           bio,
-        });
+        };
+        setHoneycombProfile(newProfile);
 
         // Step 2: Automatically mint warrior NFT with random traits
         const warriorTraits = {
@@ -208,7 +219,7 @@ export const useHoneycomb = () => {
         };
 
         // Create the warrior NFT
-        await mintWarriorNFT(name, warriorTraits);
+        const newCharacter = await mintWarriorNFT(name, warriorTraits);
         
         // Update user profile with warrior count
         if (userProfile) {
@@ -221,7 +232,10 @@ export const useHoneycomb = () => {
           title: "Warrior created successfully!",
           description: `Your warrior "${name}" has been created on-chain with a unique NFT!`,
         });
+        
+        return { profile: newProfile, character: newCharacter };
       }
+      return null;
     } catch (error) {
       console.error('Error creating user and profile:', error);
       toast({
@@ -229,6 +243,7 @@ export const useHoneycomb = () => {
         description: getSafeErrorMessage(error),
         variant: "destructive",
       });
+      return null;
     } finally {
       setLoading(false);
     }

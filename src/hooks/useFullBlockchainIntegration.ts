@@ -85,20 +85,35 @@ export const useFullBlockchainIntegration = () => {
 
     setLoading(true);
     try {
+      let currentProject = project;
+      
       // Step 1: Create project if not exists
-      if (!project) {
-        await createProject();
+      if (!currentProject) {
+        console.log('Creating new project...');
+        currentProject = await createProject();
+        if (!currentProject) {
+          throw new Error('Failed to create project');
+        }
       }
 
       // Step 2: Create profiles tree
-      await createProfilesTree();
+      console.log('Creating profiles tree with project:', currentProject.address);
+      const profilesTreeCreated = await createProfilesTree(currentProject);
+      if (!profilesTreeCreated) {
+        throw new Error('Failed to create profiles tree');
+      }
 
       // Step 3: Create user profile with warrior NFT
       if (!honeycombProfile) {
-        await createUserAndProfile(
+        console.log('Creating user profile...');
+        const result = await createUserAndProfile(
           userProfile.display_name || userProfile.username || 'Warrior',
-          userProfile.bio || 'Trait Wars participant'
+          userProfile.bio || 'Trait Wars participant',
+          currentProject
         );
+        if (!result) {
+          throw new Error('Failed to create user profile');
+        }
       }
 
       toast({

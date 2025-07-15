@@ -101,7 +101,7 @@ export const HoneycombDemo = () => {
                 <h3 className="font-semibold">Step 2: Initialize Profiles System</h3>
               </div>
               <Button 
-                onClick={createProfilesTree} 
+                onClick={() => createProfilesTree()} 
                 disabled={loading}
                 className="w-full"
                 variant="outline"
