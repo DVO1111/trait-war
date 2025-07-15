@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MissionSubmissionDialog } from "@/components/MissionSubmissionDialog";
 import {
   Target,
   Star,
@@ -104,6 +105,8 @@ export default function Missions() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMission, setSelectedMission] = useState<string | null>(null);
+  const [submissionDialogOpen, setSubmissionDialogOpen] = useState(false);
+  const [missionToSubmit, setMissionToSubmit] = useState<typeof missions[0] | null>(null);
 
   const filteredMissions = missions.filter(mission => {
     const matchesCategory = selectedCategory === "all" || mission.category === selectedCategory;
@@ -127,6 +130,11 @@ export default function Missions() {
   };
 
   const selectedMissionData = missions.find(m => m.id === selectedMission);
+
+  const handleStartMission = (mission: typeof missions[0]) => {
+    setMissionToSubmit(mission);
+    setSubmissionDialogOpen(true);
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -276,7 +284,13 @@ export default function Missions() {
                         </div>
                         
                         <div className="flex gap-2">
-                          <Button className="flex-1 bg-primary hover:bg-primary/90">
+                          <Button 
+                            className="flex-1 bg-primary hover:bg-primary/90"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleStartMission(mission);
+                            }}
+                          >
                             <Zap className="mr-2 h-4 w-4" />
                             Start Mission
                           </Button>
@@ -289,10 +303,25 @@ export default function Missions() {
                     
                     {selectedMission !== mission.id && (
                       <div className="flex gap-2">
-                        <Button size="sm" className="flex-1 bg-primary hover:bg-primary/90">
+                        <Button 
+                          size="sm" 
+                          className="flex-1 bg-primary hover:bg-primary/90"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleStartMission(mission);
+                          }}
+                        >
                           Start Mission
                         </Button>
-                        <Button size="sm" variant="outline" className="border-muted">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="border-muted"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedMission(mission.id);
+                          }}
+                        >
                           Details
                         </Button>
                       </div>
@@ -304,6 +333,16 @@ export default function Missions() {
           </div>
         </div>
       </div>
+
+      {/* Mission Submission Dialog */}
+      <MissionSubmissionDialog
+        mission={missionToSubmit}
+        isOpen={submissionDialogOpen}
+        onClose={() => {
+          setSubmissionDialogOpen(false);
+          setMissionToSubmit(null);
+        }}
+      />
     </div>
   );
 }
