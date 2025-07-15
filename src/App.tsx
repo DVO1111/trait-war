@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { GameLayout } from "@/components/GameLayout";
 import Index from "./pages/Index";
+import Auth from "./pages/Auth";
 import Missions from "./pages/Missions";
 import DAO from "./pages/DAO";
 import Leaderboard from "./pages/Leaderboard";
@@ -20,6 +21,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          <Route path="/auth" element={<Auth />} />
           <Route path="/" element={<Index />} />
           <Route path="/missions" element={<GameLayout><Missions /></GameLayout>} />
           <Route path="/dao" element={<GameLayout><DAO /></GameLayout>} />

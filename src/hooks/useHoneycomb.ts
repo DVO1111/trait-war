@@ -3,6 +3,8 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import { sendClientTransactions } from "@honeycomb-protocol/edge-client/client/walletHelpers";
 import { honeycombClient, TRAIT_WARS_PROJECT_NAME } from '@/lib/honeycomb';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { getSafeErrorMessage } from '@/lib/security';
 
 interface HoneycombProject {
   address: string;
@@ -27,9 +29,10 @@ interface HoneycombCharacter {
 export const useHoneycomb = () => {
   const wallet = useWallet();
   const { toast } = useToast();
+  const { user, profile: userProfile, updateProfile } = useAuth();
   const [loading, setLoading] = useState(false);
   const [project, setProject] = useState<HoneycombProject | null>(null);
-  const [profile, setProfile] = useState<HoneycombProfile | null>(null);
+  const [honeycombProfile, setHoneycombProfile] = useState<HoneycombProfile | null>(null);
   const [characters, setCharacters] = useState<HoneycombCharacter[]>([]);
 
   // Create a new Honeycomb project
@@ -139,6 +142,15 @@ export const useHoneycomb = () => {
 
   // Create a user and profile with automatic NFT minting
   const createUserAndProfile = useCallback(async (name: string, bio?: string) => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to create a warrior profile",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!wallet.publicKey || !wallet.signTransaction) {
       toast({
         title: "Wallet not connected",
@@ -180,7 +192,7 @@ export const useHoneycomb = () => {
       );
 
       if (response) {
-        setProfile({
+        setHoneycombProfile({
           address: `profile_${Date.now()}`,
           name,
           bio,
@@ -198,6 +210,13 @@ export const useHoneycomb = () => {
         // Create the warrior NFT
         await mintWarriorNFT(name, warriorTraits);
         
+        // Update user profile with warrior count
+        if (userProfile) {
+          await updateProfile({ 
+            warrior_count: (userProfile.warrior_count || 0) + 1 
+          });
+        }
+        
         toast({
           title: "Warrior created successfully!",
           description: `Your warrior "${name}" has been created on-chain with a unique NFT!`,
@@ -207,13 +226,13 @@ export const useHoneycomb = () => {
       console.error('Error creating user and profile:', error);
       toast({
         title: "Error creating warrior",
-        description: error instanceof Error ? error.message : "Unknown error occurred",
+        description: getSafeErrorMessage(error),
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
-  }, [wallet, project, toast]);
+  }, [wallet, project, toast, user, userProfile, updateProfile]);
 
   // Mint a warrior NFT with traits
   const mintWarriorNFT = useCallback(async (name: string, traits: Record<string, any>) => {
@@ -337,7 +356,7 @@ export const useHoneycomb = () => {
     // State
     loading,
     project,
-    profile,
+    profile: honeycombProfile,
     characters,
     
     // Actions

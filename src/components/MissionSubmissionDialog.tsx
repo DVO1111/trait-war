@@ -6,7 +6,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
+import { z } from 'zod';
 import { 
   Upload, 
   Link, 
@@ -36,6 +38,27 @@ interface Mission {
   deliverables: string[];
 }
 
+// Validation schema for mission submission
+const submissionSchema = z.object({
+  title: z.string().min(5, "Title must be at least 5 characters long")
+    .max(100, "Title must be less than 100 characters"),
+  description: z.string().min(20, "Description must be at least 20 characters long")
+    .max(1000, "Description must be less than 1000 characters"),
+  githubUrl: z.string().optional().refine((url) => {
+    if (!url) return true;
+    return z.string().url().safeParse(url).success && url.includes('github.com');
+  }, "Please enter a valid GitHub URL"),
+  demoUrl: z.string().optional().refine((url) => {
+    if (!url) return true;
+    return z.string().url().safeParse(url).success;
+  }, "Please enter a valid demo URL"),
+  documentationUrl: z.string().optional().refine((url) => {
+    if (!url) return true;
+    return z.string().url().safeParse(url).success;
+  }, "Please enter a valid documentation URL"),
+  additionalNotes: z.string().max(500, "Additional notes must be less than 500 characters").optional()
+});
+
 interface MissionSubmissionDialogProps {
   mission: Mission | null;
   isOpen: boolean;
@@ -52,32 +75,67 @@ export const MissionSubmissionDialog = ({ mission, isOpen, onClose }: MissionSub
     additionalNotes: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setValidationErrors({});
     setIsSubmitting(true);
 
-    // Simulate submission
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    try {
+      // Validate submission data
+      const validatedData = submissionSchema.parse(submissionData);
+      
+      // Additional security checks
+      if (validatedData.title.trim() !== validatedData.title) {
+        throw new Error("Title contains invalid characters");
+      }
 
-    toast({
-      title: "Mission Submitted Successfully! 🎉",
-      description: `Your submission for "${mission?.title}" has been sent for review. You'll earn ${mission?.xp} XP once approved.`,
-    });
+      // Simulate submission
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-    setIsSubmitting(false);
-    onClose();
-    
-    // Reset form
-    setSubmissionData({
-      title: '',
-      description: '',
-      githubUrl: '',
-      demoUrl: '',
-      documentationUrl: '',
-      additionalNotes: ''
-    });
+      toast({
+        title: "Mission Submitted Successfully! 🎉",
+        description: `Your submission for "${mission?.title}" has been sent for review. You'll earn ${mission?.xp} XP once approved.`,
+      });
+
+      onClose();
+      
+      // Reset form
+      setSubmissionData({
+        title: '',
+        description: '',
+        githubUrl: '',
+        demoUrl: '',
+        documentationUrl: '',
+        additionalNotes: ''
+      });
+      
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errors: Record<string, string> = {};
+        error.errors.forEach(err => {
+          if (err.path.length > 0) {
+            errors[err.path[0] as string] = err.message;
+          }
+        });
+        setValidationErrors(errors);
+        toast({
+          title: "Validation Error",
+          description: "Please fix the errors in your submission and try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Submission Error",
+          description: "Failed to submit mission. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!mission) return null;
@@ -157,9 +215,16 @@ export const MissionSubmissionDialog = ({ mission, isOpen, onClose }: MissionSub
                 value={submissionData.title}
                 onChange={(e) => setSubmissionData(prev => ({ ...prev, title: e.target.value }))}
                 placeholder="Give your submission a clear title"
-                className="bg-gaming-card border-gaming-accent/30 text-gaming-text"
+                className={`bg-gaming-card border-gaming-accent/30 text-gaming-text ${
+                  validationErrors.title ? 'border-destructive' : ''
+                }`}
                 required
               />
+              {validationErrors.title && (
+                <Alert variant="destructive" className="mt-2">
+                  <AlertDescription className="text-sm">{validationErrors.title}</AlertDescription>
+                </Alert>
+              )}
             </div>
 
             <div>
@@ -169,9 +234,16 @@ export const MissionSubmissionDialog = ({ mission, isOpen, onClose }: MissionSub
                 value={submissionData.description}
                 onChange={(e) => setSubmissionData(prev => ({ ...prev, description: e.target.value }))}
                 placeholder="Describe what you built and how it meets the mission requirements"
-                className="bg-gaming-card border-gaming-accent/30 text-gaming-text min-h-[100px]"
+                className={`bg-gaming-card border-gaming-accent/30 text-gaming-text min-h-[100px] ${
+                  validationErrors.description ? 'border-destructive' : ''
+                }`}
                 required
               />
+              {validationErrors.description && (
+                <Alert variant="destructive" className="mt-2">
+                  <AlertDescription className="text-sm">{validationErrors.description}</AlertDescription>
+                </Alert>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

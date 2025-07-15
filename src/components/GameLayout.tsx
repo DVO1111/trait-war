@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { 
   Home, 
   Target, 
@@ -8,13 +8,16 @@ import {
   Settings, 
   Zap,
   Menu,
-  X
+  X,
+  LogOut,
+  User
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { WalletButton } from "@/components/WalletButton";
 import { SettingsDialog } from "@/components/SettingsDialog";
+import { useAuth } from "@/hooks/useAuth";
 
 interface GameLayoutProps {
   children: React.ReactNode;
@@ -31,6 +34,32 @@ const navigation = [
 export function GameLayout({ children }: GameLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, profile, loading, signOut, isAuthenticated } = useAuth();
+
+  // Redirect to auth if not authenticated
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      navigate("/auth");
+    }
+  }, [loading, isAuthenticated, navigate]);
+
+  // Show loading while checking auth
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
 
   // Mock player data - in real app this would come from blockchain/state
   const playerData = {
@@ -76,7 +105,7 @@ export function GameLayout({ children }: GameLayoutProps) {
                 <div className="w-12 h-12 bg-primary rounded-full mx-auto mb-2 flex items-center justify-center shadow-neon">
                   <Zap className="h-6 w-6 text-primary-foreground" />
                 </div>
-                <h3 className="font-semibold text-sm">{playerData.username}</h3>
+                <h3 className="font-semibold text-sm">{profile?.display_name || profile?.username || user?.email}</h3>
                 <p className="text-xs text-muted-foreground">Level {playerData.level}</p>
               </div>
               
@@ -149,7 +178,20 @@ export function GameLayout({ children }: GameLayoutProps) {
             </div>
             
             <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <User className="h-4 w-4" />
+                {profile?.display_name || profile?.username || user?.email}
+              </div>
               <WalletButton />
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={signOut}
+                className="text-muted-foreground hover:text-foreground"
+                title="Sign out"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
               <SettingsDialog />
             </div>
           </div>
