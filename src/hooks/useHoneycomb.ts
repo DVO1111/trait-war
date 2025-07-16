@@ -284,7 +284,7 @@ export const useHoneycomb = () => {
   }, [wallet, project, toast]);
 
   // Create a character (NFT) with traits
- const createCharacter = useCallback(async (name: string, traits: Record<string, any>) => {
+  const createCharacter = useCallback(async (name: string, traits: Record<string, any>) => {
   if (!wallet.publicKey || !wallet.signTransaction) {
     toast({
       title: "Wallet not connected",
@@ -325,7 +325,7 @@ export const useHoneycomb = () => {
     );
 
     if (response) {
-      // Step 3: Optionally fetch the character from chain and add to state
+      // Step 3: Fetch the character from chain and add to state
       const newCharacter: HoneycombCharacter = {
         address: response.characterAddress, // Use actual address from response
         name,
@@ -357,10 +357,10 @@ export const useHoneycomb = () => {
   } finally {
     setLoading(false);
   }
-}, [wallet, project, toast, honeycombClient, sendClientTransactions, setCharacters]);g
+}, [wallet, project, toast, honeycombClient, sendClientTransactions, setCharacters]);
 
   // Participate in a mission
-  const participateInMission = useCallback(async (missionId: string, characterAddress: string) => {
+const participateInMission = useCallback(async (missionId: string, characterAddress: string) => {
   if (!wallet.publicKey || !wallet.signTransaction) {
     toast({
       title: "Wallet not connected",
@@ -389,7 +389,7 @@ export const useHoneycomb = () => {
     );
 
     if (response) {
-      // Optionally update character traits/XP in state
+      // Update character traits/XP in state
       setCharacters(prev =>
         prev.map(c =>
           c.address === characterAddress
@@ -397,7 +397,7 @@ export const useHoneycomb = () => {
                 ...c,
                 traits: {
                   ...c.traits,
-                  experience: (c.traits.experience || 0) + 50, // Example XP gain
+                  experience: (c.traits.experience || 0) + 50, // XP gain
                   missionsCompleted: (c.traits.missionsCompleted || 0) + 1,
                 },
               }
@@ -406,7 +406,7 @@ export const useHoneycomb = () => {
       );
       toast({
         title: "Mission completed!",
-        description: "Your character has participated in the mission and gained experience!",
+        description: "Your character has participated in the mission and gained XPs!",
       });
     } else {
       toast({
@@ -426,6 +426,7 @@ export const useHoneycomb = () => {
     setLoading(false);
   }
 }, [wallet, toast, honeycombClient, sendClientTransactions, setCharacters]);
+
   return {
     // State
     loading,
@@ -441,6 +442,8 @@ export const useHoneycomb = () => {
     mintWarriorNFT,
     participateInMission,
     evolveCharacterTraits,
+    voteInDaoRound,
+    rewardDaoWinner,
     
     // Utilities
     isConnected: !!wallet.publicKey,
@@ -468,6 +471,7 @@ const evolveCharacterTraits = useCallback(
         title: "Traits evolved!",
         description: "Character traits have been updated.",
       });
+      // Add Honeycomb on-chain trait update logic
     } catch (error) {
       console.error('Error evolving traits:', error);
       toast({
@@ -480,4 +484,64 @@ const evolveCharacterTraits = useCallback(
     }
   },
   [setCharacters, toast]
+);
+const voteInDaoRound = useCallback(
+  async (characterAddress: string, voteOption: string) => {
+    setLoading(true);
+    try {
+      // Reduce XP for voting
+      setCharacters(prev =>
+        prev.map(c =>
+          c.address === characterAddress
+            ? {
+                ...c,
+                traits: {
+                  ...c.traits,
+                  experience: Math.max((c.traits.experience || 0) - 100, 0), // Reduce XP, min 0
+                  lastVote: voteOption,
+                },
+              }
+            : c
+        )
+      );
+      toast({
+        title: "Vote submitted!",
+        description: "Your vote has been recorded and XP reduced.",
+      });
+      // Add Honeycomb DAO voting transaction here
+    } catch (error) {
+      console.error('Error voting in DAO round:', error);
+      toast({
+        title: "Error voting",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  },
+  [setCharacters, toast]
+);
+const rewardDaoWinner = useCallback(
+  async (characterAddress: string, winningOption: string) => {
+    const character = characters.find(c => c.address === characterAddress);
+    if (!character) return;
+
+    // Check if the user's last vote matches the winning option
+    if (character.traits.lastVote === winningOption) {
+      // Mint NFT as a reward using your existing mintWarriorNFT function
+      const rewardTraits = {
+        ...character.traits,
+        daoWinner: true,
+        rewardReceived: true,
+      };
+      await mintWarriorNFT(`${character.name} DAO Winner`, rewardTraits);
+
+      toast({
+        title: "NFT Rewarded!",
+        description: "You voted for the winner and received a DAO Winner NFT!",
+      });
+    }
+  },
+  [characters, mintWarriorNFT, toast]
 );
