@@ -105,9 +105,9 @@ export const useWalletFirstAuth = () => {
         .from('profiles')
         .select('*')
         .eq('wallet_address', walletAddr)
-        .single();
+        .maybeSingle();
 
-      if (fetchError && fetchError.code !== 'PGRST116') {
+      if (fetchError) {
         throw fetchError;
       }
 
