@@ -8,7 +8,7 @@ import { HoneycombDemo } from "@/components/HoneycombDemo";
 import { UserOnboarding } from "@/components/UserOnboarding";
 import { useMissions } from "@/hooks/useMissions";
 import { useUserProgress } from "@/hooks/useUserProgress";
-import { useWalletAuth } from "@/hooks/useWalletAuth";
+import { useWalletFirstAuth } from "@/hooks/useWalletFirstAuth";
 import solanaLogo from "@/assets/solana-logo.svg";
 import superteamLogo from "@/assets/superteam-logo.png";
 import superteamNigeriaLogo from "@/assets/superteam-nigeria-logo.png";
@@ -35,7 +35,7 @@ export default function Dashboard() {
   
   const { missions, loading: missionsLoading } = useMissions();
   const { progress, loading: progressLoading } = useUserProgress();
-  const { isAuthenticated } = useWalletAuth();
+  const { isAuthenticated } = useWalletFirstAuth();
 
   // Check if user has completed onboarding
   useEffect(() => {
