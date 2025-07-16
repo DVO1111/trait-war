@@ -339,34 +339,71 @@ export const useHoneycomb = () => {
 
   // Participate in a mission
   const participateInMission = useCallback(async (missionId: string, characterAddress: string) => {
-    if (!wallet.publicKey || !wallet.signTransaction) {
+  if (!wallet.publicKey || !wallet.signTransaction) {
+    toast({
+      title: "Wallet not connected",
+      description: "Please connect your wallet first",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  setLoading(true);
+  try {
+    // Step 1: Build the transaction using Honeycomb's API
+    const { createParticipateInMissionTransaction: txResponse } =
+      await honeycombClient.createParticipateInMissionTransaction({
+        mission: missionId,
+        character: characterAddress,
+        wallet: wallet.publicKey.toBase58(),
+        payer: wallet.publicKey.toBase58(),
+      });
+
+    // Step 2: Send the transaction
+    const response = await sendClientTransactions(
+      honeycombClient,
+      wallet,
+      txResponse
+    );
+
+    if (response) {
+      // Optionally update character traits/XP in state
+      setCharacters(prev =>
+        prev.map(c =>
+          c.address === characterAddress
+            ? {
+                ...c,
+                traits: {
+                  ...c.traits,
+                  experience: (c.traits.experience || 0) + 50, // Example XP gain
+                  missionsCompleted: (c.traits.missionsCompleted || 0) + 1,
+                },
+              }
+            : c
+        )
+      );
       toast({
-        title: "Wallet not connected",
-        description: "Please connect your wallet first",
+        title: "Mission completed!",
+        description: "Your character has participated in the mission and gained experience!",
+      });
+    } else {
+      toast({
+        title: "Mission failed",
+        description: "Could not complete mission on-chain.",
         variant: "destructive",
       });
-      return;
     }
-
-    setLoading(true);
-    try {
-      // This would be mission participation logic
-      toast({
-        title: "Mission participation",
-        description: "Mission system integration is being implemented...",
-      });
-    } catch (error) {
-      console.error('Error participating in mission:', error);
-      toast({
-        title: "Error participating in mission",
-        description: error instanceof Error ? error.message : "Unknown error occurred",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [wallet, toast]);
-
+  } catch (error) {
+    console.error('Error participating in mission:', error);
+    toast({
+      title: "Error participating in mission",
+      description: error instanceof Error ? error.message : "Unknown error occurred",
+      variant: "destructive",
+    });
+  } finally {
+    setLoading(false);
+  }
+}, [wallet, toast, honeycombClient, sendClientTransactions, setCharacters]);
   return {
     // State
     loading,
