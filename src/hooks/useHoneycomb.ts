@@ -418,9 +418,44 @@ export const useHoneycomb = () => {
     createCharacter,
     mintWarriorNFT,
     participateInMission,
+    evolveCharacterTraits,
     
     // Utilities
     isConnected: !!wallet.publicKey,
     walletAddress: wallet.publicKey?.toBase58(),
   };
 };
+const evolveCharacterTraits = useCallback(
+  async (characterAddress: string, traitUpdates: Record<string, any>) => {
+    setLoading(true);
+    try {
+      setCharacters(prev =>
+        prev.map(c =>
+          c.address === characterAddress
+            ? {
+                ...c,
+                traits: {
+                  ...c.traits,
+                  ...traitUpdates,
+                },
+              }
+            : c
+        )
+      );
+      toast({
+        title: "Traits evolved!",
+        description: "Character traits have been updated.",
+      });
+    } catch (error) {
+      console.error('Error evolving traits:', error);
+      toast({
+        title: "Error evolving traits",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  },
+  [setCharacters, toast]
+);
