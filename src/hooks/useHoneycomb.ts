@@ -3,7 +3,7 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import { sendClientTransactions } from "@honeycomb-protocol/edge-client/client/walletHelpers";
 import { honeycombClient, TRAIT_WARS_PROJECT_NAME } from '@/lib/honeycomb';
 import { useToast } from '@/hooks/use-toast';
-import { useWalletFirstAuth } from '@/hooks/useWalletFirstAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { getSafeErrorMessage } from '@/lib/security';
 
 interface HoneycombProject {
@@ -29,7 +29,7 @@ interface HoneycombCharacter {
 export const useHoneycomb = () => {
   const wallet = useWallet();
   const { toast } = useToast();
-  const { profile: userProfile, updateProfile, isAuthenticated, walletAddress } = useWalletFirstAuth();
+  const { profile: userProfile, updateProfile, isAuthenticated, walletAddress } = useAuth();
   const [loading, setLoading] = useState(false);
   const [project, setProject] = useState<HoneycombProject | null>(null);
   const [honeycombProfile, setHoneycombProfile] = useState<HoneycombProfile | null>(null);
