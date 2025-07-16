@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { MissionCreationDialog } from "@/components/MissionCreationDialog";
 import { useCreator } from "@/hooks/useCreator";
-import { useWalletAuth } from "@/hooks/useWalletAuth";
+import { useWalletFirstAuth } from "@/hooks/useWalletFirstAuth";
 import {
   Target,
   Clock,
@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 
 export default function Creator() {
-  const { isAuthenticated } = useWalletAuth();
+  const { isAuthenticated } = useWalletFirstAuth();
   const { 
     creatorMissions, 
     pendingSubmissions, 
@@ -48,24 +48,8 @@ export default function Creator() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
-  if (!isAuthenticated) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Card className="max-w-md text-center">
-          <CardContent className="p-8">
-            <Crown className="h-12 w-12 text-primary mx-auto mb-4" />
-            <h2 className="text-xl font-bold mb-2">Creator Dashboard</h2>
-            <p className="text-muted-foreground mb-4">
-              Connect your wallet to access the Creator Dashboard
-            </p>
-            <Button className="bg-primary hover:bg-primary/90">
-              Connect Wallet
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  // Since we're using ProtectedRoute, user is guaranteed to be authenticated
+  // Remove the authentication check as it's handled by ProtectedRoute
 
   const handleReviewSubmission = async (submissionId: string, status: 'approved' | 'rejected') => {
     setIsSubmitting(true);

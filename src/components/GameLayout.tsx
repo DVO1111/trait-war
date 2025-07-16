@@ -19,7 +19,7 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { WalletButton } from "@/components/WalletButton";
 import { SettingsDialog } from "@/components/SettingsDialog";
-import { useAuth } from "@/hooks/useAuth";
+import { useWalletFirstAuth } from "@/hooks/useWalletFirstAuth";
 import { useUserProgress } from "@/hooks/useUserProgress";
 
 interface GameLayoutProps {
@@ -40,15 +40,15 @@ export function GameLayout({ children }: GameLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
-  const { profile, loading, signOut, isAuthenticated, displayName } = useAuth();
+  const { isAuthenticated, loading, displayName, signOut } = useWalletFirstAuth();
   const { progress, getXPNeededForNextLevel, getProgressToNextLevel, loading: progressLoading } = useUserProgress();
 
 
 
-  // Redirect to auth if not authenticated
+  // Redirect to wallet auth if not authenticated
   useEffect(() => {
     if (!loading && !isAuthenticated) {
-      navigate("/auth");
+      navigate("/wallet-auth");
     }
   }, [loading, isAuthenticated, navigate]);
 
@@ -71,7 +71,7 @@ export function GameLayout({ children }: GameLayoutProps) {
 
   // Get real player data from progress with fallbacks
   const playerData = {
-    username: displayName || "Builder",
+    username: displayName,
     level: progress?.level || 1,
     xp: progress?.total_xp || 0,
     currentLevelXP: progress?.current_level_xp || 0,
