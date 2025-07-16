@@ -121,7 +121,7 @@ export const useWalletFirstAuth = () => {
           })
           .eq('wallet_address', walletAddr)
           .select()
-          .single();
+          .maybeSingle();
 
         if (updateError) throw updateError;
         setProfile(updatedProfile);
@@ -184,7 +184,7 @@ export const useWalletFirstAuth = () => {
         .update(updates)
         .eq('user_id', user.id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
