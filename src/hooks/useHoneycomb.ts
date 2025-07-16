@@ -284,58 +284,80 @@ export const useHoneycomb = () => {
   }, [wallet, project, toast]);
 
   // Create a character (NFT) with traits
-  const createCharacter = useCallback(async (name: string, traits: Record<string, any>) => {
-    if (!wallet.publicKey || !wallet.signTransaction) {
-      toast({
-        title: "Wallet not connected",
-        description: "Please connect your wallet first",
-        variant: "destructive",
-      });
-      return;
-    }
+ const createCharacter = useCallback(async (name: string, traits: Record<string, any>) => {
+  if (!wallet.publicKey || !wallet.signTransaction) {
+    toast({
+      title: "Wallet not connected",
+      description: "Please connect your wallet first",
+      variant: "destructive",
+    });
+    return;
+  }
 
-    if (!project) {
-      toast({
-        title: "No project found",
-        description: "Please create a project first",
-        variant: "destructive",
-      });
-      return;
-    }
+  if (!project) {
+    toast({
+      title: "No project found",
+      description: "Please create a project first",
+      variant: "destructive",
+    });
+    return;
+  }
 
-    setLoading(true);
-    try {
-      // This would be the character creation transaction
-      // The exact API might differ based on Honeycomb's character system
-      toast({
-        title: "Character creation",
-        description: "Character creation with traits is being implemented...",
+  setLoading(true);
+  try {
+    // Step 1: Build the transaction using Honeycomb's Character Manager
+    const { createCharacterTransaction: txResponse } =
+      await honeycombClient.createCharacterTransaction({
+        project: project.address,
+        wallet: wallet.publicKey.toBase58(),
+        payer: wallet.publicKey.toBase58(),
+        characterInfo: {
+          name,
+          traits,
+        },
       });
-      
-      // For now, we'll simulate character creation
+
+    // Step 2: Send the transaction
+    const response = await sendClientTransactions(
+      honeycombClient,
+      wallet,
+      txResponse
+    );
+
+    if (response) {
+      // Step 3: Optionally fetch the character from chain and add to state
       const newCharacter: HoneycombCharacter = {
-        address: `character_${Date.now()}`,
+        address: response.characterAddress, // Use actual address from response
         name,
         traits,
+        isNFT: true,
+        mintAddress: response.mintAddress, // Use actual mint address from response
       };
-      
+
       setCharacters(prev => [...prev, newCharacter]);
-      
+
       toast({
         title: "Character created!",
-        description: `${name} has been created with custom traits`,
+        description: `${name} has been created on-chain with custom traits`,
       });
-    } catch (error) {
-      console.error('Error creating character:', error);
+    } else {
       toast({
-        title: "Error creating character",
-        description: error instanceof Error ? error.message : "Unknown error occurred",
+        title: "Character creation failed",
+        description: "Could not create character on-chain.",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
-  }, [wallet, project, toast]);
+  } catch (error) {
+    console.error('Error creating character:', error);
+    toast({
+      title: "Error creating character",
+      description: error instanceof Error ? error.message : "Unknown error occurred",
+      variant: "destructive",
+    });
+  } finally {
+    setLoading(false);
+  }
+}, [wallet, project, toast, honeycombClient, sendClientTransactions, setCharacters]);g
 
   // Participate in a mission
   const participateInMission = useCallback(async (missionId: string, characterAddress: string) => {
