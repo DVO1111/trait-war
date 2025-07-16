@@ -2,7 +2,7 @@ import { GameLayout } from "@/components/GameLayout";
 import { useWalletFirstAuth } from "@/hooks/useWalletFirstAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Link } from "react-router-dom";
+import { WalletButton } from "@/components/WalletButton";
 import { Wallet } from "lucide-react";
 import Dashboard from "./Dashboard";
 
@@ -34,12 +34,9 @@ const Index = () => {
             <p className="text-muted-foreground mb-6">
               Connect your wallet to start your Web3 gaming journey and earn NFT rewards!
             </p>
-            <Button asChild className="bg-primary hover:bg-primary/90 shadow-neon">
-              <Link to="/wallet-auth">
-                <Wallet className="mr-2 h-4 w-4" />
-                Connect Wallet
-              </Link>
-            </Button>
+            <div className="w-full">
+              <WalletButton />
+            </div>
           </CardContent>
         </Card>
       </div>
