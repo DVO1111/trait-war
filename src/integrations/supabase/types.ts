@@ -62,6 +62,7 @@ export type Database = {
       mission_submissions: {
         Row: {
           additional_notes: string | null
+          auth_user_id: string | null
           created_at: string
           demo_url: string | null
           description: string
@@ -81,6 +82,7 @@ export type Database = {
         }
         Insert: {
           additional_notes?: string | null
+          auth_user_id?: string | null
           created_at?: string
           demo_url?: string | null
           description: string
@@ -100,6 +102,7 @@ export type Database = {
         }
         Update: {
           additional_notes?: string | null
+          auth_user_id?: string | null
           created_at?: string
           demo_url?: string | null
           description?: string
@@ -132,6 +135,7 @@ export type Database = {
           category: string
           created_at: string
           creator_id: string | null
+          creator_user_id: string | null
           deliverables: string[] | null
           description: string
           difficulty: string
@@ -148,6 +152,7 @@ export type Database = {
           category: string
           created_at?: string
           creator_id?: string | null
+          creator_user_id?: string | null
           deliverables?: string[] | null
           description: string
           difficulty: string
@@ -164,6 +169,7 @@ export type Database = {
           category?: string
           created_at?: string
           creator_id?: string | null
+          creator_user_id?: string | null
           deliverables?: string[] | null
           description?: string
           difficulty?: string
@@ -184,9 +190,12 @@ export type Database = {
           bio: string | null
           created_at: string
           display_name: string | null
+          email_linked: boolean | null
           id: string
+          is_anonymous: boolean | null
           last_login: string | null
           updated_at: string
+          user_id: string | null
           username: string | null
           wallet_address: string
           warrior_count: number | null
@@ -196,9 +205,12 @@ export type Database = {
           bio?: string | null
           created_at?: string
           display_name?: string | null
+          email_linked?: boolean | null
           id?: string
+          is_anonymous?: boolean | null
           last_login?: string | null
           updated_at?: string
+          user_id?: string | null
           username?: string | null
           wallet_address: string
           warrior_count?: number | null
@@ -208,9 +220,12 @@ export type Database = {
           bio?: string | null
           created_at?: string
           display_name?: string | null
+          email_linked?: boolean | null
           id?: string
+          is_anonymous?: boolean | null
           last_login?: string | null
           updated_at?: string
+          user_id?: string | null
           username?: string | null
           wallet_address?: string
           warrior_count?: number | null
@@ -219,6 +234,7 @@ export type Database = {
       }
       user_mission_progress: {
         Row: {
+          auth_user_id: string | null
           completed_at: string | null
           id: string
           mission_id: string | null
@@ -227,6 +243,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          auth_user_id?: string | null
           completed_at?: string | null
           id?: string
           mission_id?: string | null
@@ -235,6 +252,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          auth_user_id?: string | null
           completed_at?: string | null
           id?: string
           mission_id?: string | null
@@ -254,6 +272,7 @@ export type Database = {
       }
       user_progress: {
         Row: {
+          auth_user_id: string | null
           created_at: string
           current_level_xp: number | null
           id: string
@@ -267,6 +286,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          auth_user_id?: string | null
           created_at?: string
           current_level_xp?: number | null
           id?: string
@@ -280,6 +300,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          auth_user_id?: string | null
           created_at?: string
           current_level_xp?: number | null
           id?: string
@@ -302,6 +323,29 @@ export type Database = {
       calculate_xp_for_level: {
         Args: { level_num: number }
         Returns: number
+      }
+      create_wallet_profile: {
+        Args: {
+          p_wallet_address: string
+          p_username?: string
+          p_display_name?: string
+          p_bio?: string
+        }
+        Returns: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          display_name: string | null
+          email_linked: boolean | null
+          id: string
+          is_anonymous: boolean | null
+          last_login: string | null
+          updated_at: string
+          user_id: string | null
+          username: string | null
+          wallet_address: string
+          warrior_count: number | null
+        }
       }
     }
     Enums: {

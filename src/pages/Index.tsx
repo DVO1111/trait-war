@@ -1,13 +1,13 @@
 import { GameLayout } from "@/components/GameLayout";
-import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { useWalletFirstAuth } from "@/hooks/useWalletFirstAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { LogIn, Shield } from "lucide-react";
+import { Wallet } from "lucide-react";
 import Dashboard from "./Dashboard";
 
 const Index = () => {
-  const { isAuthenticated, loading } = useSupabaseAuth();
+  const { isAuthenticated, loading } = useWalletFirstAuth();
   
   if (loading) {
     return (
@@ -25,19 +25,19 @@ const Index = () => {
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="max-w-md text-center bg-gradient-cyber border-primary/20">
           <CardHeader>
-            <Shield className="h-12 w-12 text-primary mx-auto mb-4" />
+            <Wallet className="h-12 w-12 text-primary mx-auto mb-4" />
             <CardTitle className="text-2xl font-bold bg-gradient-xp bg-clip-text text-transparent">
               Welcome to Trait Wars
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-6">
-              Sign in to start your blockchain gaming journey and earn rewards!
+              Connect your wallet to start your Web3 gaming journey and earn NFT rewards!
             </p>
             <Button asChild className="bg-primary hover:bg-primary/90 shadow-neon">
-              <Link to="/auth">
-                <LogIn className="mr-2 h-4 w-4" />
-                Sign In
+              <Link to="/wallet-auth">
+                <Wallet className="mr-2 h-4 w-4" />
+                Connect Wallet
               </Link>
             </Button>
           </CardContent>

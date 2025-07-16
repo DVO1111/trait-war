@@ -19,7 +19,7 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { WalletButton } from "@/components/WalletButton";
 import { SettingsDialog } from "@/components/SettingsDialog";
-import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { useWalletFirstAuth } from "@/hooks/useWalletFirstAuth";
 import { useUserProgress } from "@/hooks/useUserProgress";
 
 interface GameLayoutProps {
@@ -40,15 +40,15 @@ export function GameLayout({ children }: GameLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated, loading, user } = useSupabaseAuth();
+  const { isAuthenticated, loading, displayName, signOut } = useWalletFirstAuth();
   const { progress, getXPNeededForNextLevel, getProgressToNextLevel, loading: progressLoading } = useUserProgress();
 
 
 
-  // Redirect to auth if not authenticated
+  // Redirect to wallet auth if not authenticated
   useEffect(() => {
     if (!loading && !isAuthenticated) {
-      navigate("/auth");
+      navigate("/wallet-auth");
     }
   }, [loading, isAuthenticated, navigate]);
 
@@ -70,7 +70,6 @@ export function GameLayout({ children }: GameLayoutProps) {
   }
 
   // Get real player data from progress with fallbacks
-  const displayName = user?.user_metadata?.display_name || user?.user_metadata?.username || user?.email?.split('@')[0] || "Builder";
   const playerData = {
     username: displayName,
     level: progress?.level || 1,
@@ -201,12 +200,7 @@ export function GameLayout({ children }: GameLayoutProps) {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={async () => {
-                  await import('@/integrations/supabase/client').then(({ supabase }) => {
-                    supabase.auth.signOut();
-                  });
-                  navigate('/auth');
-                }}
+                onClick={signOut}
                 className="text-muted-foreground hover:text-foreground"
                 title="Sign out"
               >

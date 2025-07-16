@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { MissionCreationDialog } from "@/components/MissionCreationDialog";
 import { useCreator } from "@/hooks/useCreator";
-import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { useWalletFirstAuth } from "@/hooks/useWalletFirstAuth";
 import {
   Target,
   Clock,
@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 
 export default function Creator() {
-  const { isAuthenticated } = useSupabaseAuth();
+  const { isAuthenticated } = useWalletFirstAuth();
   const { 
     creatorMissions, 
     pendingSubmissions, 
