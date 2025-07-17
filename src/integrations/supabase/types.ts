@@ -282,6 +282,7 @@ export type Database = {
           last_activity_date: string | null
           level: number | null
           missions_completed: number | null
+          profile_id: string | null
           streak_days: number | null
           total_xp: number | null
           traits: Json | null
@@ -296,6 +297,7 @@ export type Database = {
           last_activity_date?: string | null
           level?: number | null
           missions_completed?: number | null
+          profile_id?: string | null
           streak_days?: number | null
           total_xp?: number | null
           traits?: Json | null
@@ -310,13 +312,22 @@ export type Database = {
           last_activity_date?: string | null
           level?: number | null
           missions_completed?: number | null
+          profile_id?: string | null
           streak_days?: number | null
           total_xp?: number | null
           traits?: Json | null
           updated_at?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_progress_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
