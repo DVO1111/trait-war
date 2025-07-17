@@ -1,4 +1,5 @@
-project_id = "yjdyuywsqlzejlfvgdmy"
+[project]
+id = "yjdyuywsqlzejlfvgdmy"
 
 [local]
 database_host = "localhost"
@@ -12,3 +13,52 @@ dir = "supabase/migrations"
 
 [functions]
 dir = "supabase/functions"
+
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = [
+    "https://0cdf81ff-0906-4cdd-972e-611be591a436.lovableproject.com/**", 
+    "https://id-preview--0cdf81ff-0906-4cdd-972e-611be591a436.lovable.app/**", 
+    "https://preview--trait-war.lovable.app/**", 
+    "https://trait-war.lovable.app/**"
+]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_manual_linking = true
+enable_signup = true
+enable_anonymous_sign_ins = true
+minimum_password_length = 6
+password_requirements = ""
+jwt_secret = ""
+
+[auth.mfa]
+max_enrolled_factors = 10
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+[auth.mfa.phone]
+enroll_enabled = false
+verify_enabled = false
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = true
+secure_password_change = false
+max_frequency = "1m0s"
+otp_length = 6
+otp_expiry = 86400
+[auth.email.template]
+[auth.sms]
+enable_signup = false
+
+[auth.web3]
+[auth.web3.solana]
+enabled = true
+
+[auth.third_party]
+[auth.third_party.firebase]
+enabled = false
