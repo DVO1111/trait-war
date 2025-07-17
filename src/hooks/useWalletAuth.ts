@@ -140,17 +140,14 @@ export const useWalletAuth = () => {
     }
 
     try {
+      // Use the database function to create wallet profile (bypasses RLS)
       const { data, error } = await supabase
-        .from('profiles')
-        .insert({
-          wallet_address: walletAddress,
-          username: userData.username,
-          display_name: userData.displayName,
-          bio: userData.bio,
-          last_login: new Date().toISOString(),
-        })
-        .select()
-        .single();
+        .rpc('create_wallet_profile', {
+          p_wallet_address: walletAddress,
+          p_username: userData.username,
+          p_display_name: userData.displayName,
+          p_bio: userData.bio || null,
+        });
 
       if (error) {
         if (error.code === '23505') { // Unique constraint violation
