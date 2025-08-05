@@ -85,9 +85,19 @@ export const useHoneycomb = () => {
     } catch (error) {
       console.error('Detailed error creating project:', error);
       console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+      
+      let errorMessage = "Unknown error occurred";
+      if (error instanceof Error) {
+        if (error.message.includes("Attempt to debit an account but found no record of a prior credit")) {
+          errorMessage = "Insufficient SOL balance. Please add testnet SOL to your wallet first.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: "Error creating project",
-        description: error instanceof Error ? error.message : "Unknown error occurred",
+        description: errorMessage,
         variant: "destructive",
       });
       return null;
