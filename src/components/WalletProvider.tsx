@@ -11,7 +11,7 @@ interface Props {
 }
 
 export const WalletConnectionProvider: FC<Props> = ({ children }) => {
-  // Use Honeycomb's Honeynet for testing - has unlimited SOLs for testing
+  // Use Honeycomb's testnet for the game - this forces all connections to use their network
   const endpoint = useMemo(() => "https://rpc.test.honeycombprotocol.com", []);
 
   const wallets = useMemo(
