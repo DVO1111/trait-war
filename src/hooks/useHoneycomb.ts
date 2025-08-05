@@ -48,17 +48,24 @@ export const useHoneycomb = () => {
 
     setLoading(true);
     try {
+      console.log('Creating project with wallet:', wallet.publicKey.toBase58());
+      console.log('Creating project with name:', TRAIT_WARS_PROJECT_NAME);
+      
       const { createCreateProjectTransaction: { project: projectAddress, tx: txResponse } } = 
         await honeycombClient.createCreateProjectTransaction({
           name: TRAIT_WARS_PROJECT_NAME,
           authority: wallet.publicKey.toBase58(),
         });
 
+      console.log('Project transaction created:', { projectAddress, txResponse });
+
       const response = await sendClientTransactions(
         honeycombClient,
         wallet,
         txResponse
       );
+
+      console.log('Transaction response:', response);
 
       if (response) {
         const newProject = {
@@ -76,7 +83,8 @@ export const useHoneycomb = () => {
       }
       return null;
     } catch (error) {
-      console.error('Error creating project:', error);
+      console.error('Detailed error creating project:', error);
+      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
       toast({
         title: "Error creating project",
         description: error instanceof Error ? error.message : "Unknown error occurred",
