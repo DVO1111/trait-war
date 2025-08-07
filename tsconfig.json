@@ -1,3 +1,4 @@
+// filepath: c:\Users\HP\Documents\trait-war\tsconfig.json
 {
   "files": [],
   "references": [
@@ -5,10 +6,10 @@
     { "path": "./tsconfig.node.json" }
   ],
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"]
-    },
+    // "baseUrl": ".",
+    // "paths": {
+    //   "@/*": ["./src/*"]
+    // },
     "noImplicitAny": false,
     "noUnusedParameters": false,
     "skipLibCheck": true,

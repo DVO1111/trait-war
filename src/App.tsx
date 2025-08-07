@@ -1,3 +1,5 @@
+import TestProject from "./pages/TestProject";
+import MyProjects from "./pages/MyProjects";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -31,6 +33,8 @@ const App = () => (
           <Route path="/creator" element={<GameLayout><Creator /></GameLayout>} />
           <Route path="/blockchain" element={<GameLayout><Blockchain /></GameLayout>} />
           <Route path="/settings" element={<GameLayout><Settings /></GameLayout>} />
+          <Route path="/test" element={<GameLayout><TestProject /></GameLayout>} />
+          <Route path="/my-projects" element={<GameLayout><MyProjects /></GameLayout>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
