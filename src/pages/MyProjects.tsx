@@ -12,17 +12,26 @@ export default function MyProjects() {
       if (!publicKey) return;
 
       setLoading(true);
-       try {
-        // Replace with an existing client method that fetches projects by authority
-        // Example: using findCompressedAccounts or another appropriate method
+      try {
         const result = await client.findCompressedAccounts({
           addresses: [publicKey.toBase58()],
         });
-        console.log(result); // ADD THIS LINE TO INSPECT THE RESPONSE
-        // Adjust the property below to match the actual structure of FindCompressedAccountsQuery
-        setProjects(result.items || []);
+
+        console.log("Compressed accounts result:", result);
+
+        // Check the actual structure of result before setting state
+        if (Array.isArray(result)) {
+          setProjects(result); // If it's an array
+        } else if ("items" in result && Array.isArray(result.items)) {
+          setProjects(result.items); // Fallback if result has `.items`
+        } else {
+          console.warn("Unexpected result format:", result);
+          setProjects([]);
+        }
+
       } catch (error) {
         console.error("Error fetching projects:", error);
+        setProjects([]);
       } finally {
         setLoading(false);
       }
@@ -38,10 +47,10 @@ export default function MyProjects() {
         <p>Loading...</p>
       ) : (
         <ul className="space-y-2">
-          {projects.map((project) => (
-            <li key={project.id}>
-              <strong>{project.name}</strong> <br />
-              ID: <code className="text-xs">{project.id}</code>
+          {projects.map((project, index) => (
+            <li key={project.id ?? index}>
+              <strong>{project.name ?? "Unnamed Project"}</strong> <br />
+              ID: <code className="text-xs">{project.id ?? "N/A"}</code>
             </li>
           ))}
         </ul>
