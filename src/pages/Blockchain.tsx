@@ -8,6 +8,7 @@ import { useFullBlockchainIntegration } from '@/hooks/useFullBlockchainIntegrati
 import { BlockchainRewardsPanel } from '@/components/BlockchainRewardsPanel';
 import { HoneycombDemo } from '@/components/HoneycombDemo';
 import { HoneycombAdvancedDemo } from '@/components/HoneycombAdvancedDemo';
+import { ProjectFinder } from '@/components/ProjectFinder';
 import { 
   CheckCircle, 
   Circle, 
@@ -339,6 +340,7 @@ export default function Blockchain() {
         </TabsContent>
 
         <TabsContent value="advanced" className="space-y-6">
+          <ProjectFinder />
           <HoneycombAdvancedDemo />
           
           <Card>
