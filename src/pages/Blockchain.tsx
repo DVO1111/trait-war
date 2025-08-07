@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFullBlockchainIntegration } from '@/hooks/useFullBlockchainIntegration';
 import { BlockchainRewardsPanel } from '@/components/BlockchainRewardsPanel';
 import { HoneycombDemo } from '@/components/HoneycombDemo';
+import { HoneycombAdvancedDemo } from '@/components/HoneycombAdvancedDemo';
 import { 
   CheckCircle, 
   Circle, 
@@ -338,11 +339,13 @@ export default function Blockchain() {
         </TabsContent>
 
         <TabsContent value="advanced" className="space-y-6">
+          <HoneycombAdvancedDemo />
+          
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Zap className="w-5 h-5" />
-                Advanced Features
+                Upcoming Features
               </CardTitle>
             </CardHeader>
             <CardContent>

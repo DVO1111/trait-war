@@ -3,10 +3,7 @@ import {
   ConnectionProvider,
   WalletProvider,
 } from "@solana/wallet-adapter-react";
-import {
-  PhantomWalletAdapter,
-  SolflareWalletAdapter,
-} from "@solana/wallet-adapter-wallets";
+import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
 import {
   WalletModalProvider,
 } from "@solana/wallet-adapter-react-ui";
@@ -34,11 +31,11 @@ import "@solana/wallet-adapter-react-ui/styles.css";
 const queryClient = new QueryClient();
 
 const App = () => {
-  const network = "https://rpc.main.honeycombprotocol.com";
+  const network = "https://rpc.test.honeycombprotocol.com";
   const endpoint = useMemo(() => network, [network]);
 
   const wallets = useMemo(
-    () => [new PhantomWalletAdapter(), new SolflareWalletAdapter()],
+    () => [new PhantomWalletAdapter()],
     [network]
   );
 
