@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { sendClientTransactions } from "@honeycomb-protocol/edge-client/client/walletHelpers";
-import { honeycombClient } from '@/lib/honeycomb';
+import { honeycombClient, EXISTING_PROJECT_ID } from '@/lib/honeycomb';
 import { useToast } from '@/hooks/use-toast';
 
 interface HoneycombProject {
@@ -491,6 +491,30 @@ export const useHoneycombAdvanced = () => {
     }
   }, [wallet, toast]);
 
+  // Find projects by various filters
+  const findProjects = useCallback(async (filters: {
+    authorities?: string[];
+    addresses?: string[];
+    names?: string[];
+    includeProof?: boolean;
+  } = {}) => {
+    try {
+      const response = await honeycombClient.findProjects(filters);
+      if (response.project) {
+        return response.project;
+      }
+      return [];
+    } catch (error) {
+      console.error('Error finding projects:', error);
+      toast({
+        title: "Error finding projects",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        variant: "destructive",
+      });
+      return [];
+    }
+  }, [toast]);
+
   return {
     loading,
     projects,
@@ -500,6 +524,7 @@ export const useHoneycombAdvanced = () => {
     // Project operations
     createProject,
     createProfilesTree,
+    findProjects,
     
     // User operations
     createUser,
@@ -515,5 +540,8 @@ export const useHoneycombAdvanced = () => {
     // Connection status
     isConnected: !!wallet.connected,
     walletAddress: wallet.publicKey?.toBase58(),
+    
+    // Helper for existing project
+    existingProjectId: EXISTING_PROJECT_ID,
   };
 };
