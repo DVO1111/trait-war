@@ -2,7 +2,7 @@
 import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 import { readFileSync } from "fs";
 import path from "path";
-import sendAndConfirmTransaction from "@honeycomb-protocol/edge-client/dist/esm/sendAndConfirmTransaction";
+import { sendClientTransactions } from "@honeycomb-protocol/edge-client/client/walletHelpers";
 import { createEdgeClient } from "@honeycomb-protocol/edge-client";
 
 // --- 1. Setup constants
@@ -34,7 +34,7 @@ const projectAddress = new PublicKey(PROJECT_ID);
 // --- 4. Create Profiles Tree
 async function createProfilesTree() {
   try {
-    const txResponse = await client.createCreateProfilesTreeTransaction({
+    const { createCreateProfilesTreeTransaction: txResponse } = await client.createCreateProfilesTreeTransaction({
       payer: adminKeypair.publicKey.toBase58(),
       project: projectAddress.toBase58(),
       treeConfig: {
@@ -46,14 +46,22 @@ async function createProfilesTree() {
 
     console.log("Transaction built. Sending...");
 
-    const { signature } = await sendAndConfirmTransaction({
-      connection,
-      transactionResponse: txResponse,
-      signers: [adminKeypair],
-    });
+    const walletAdapter = {
+      publicKey: adminKeypair.publicKey,
+      signTransaction: async (tx: any) => {
+        tx.partialSign(adminKeypair);
+        return tx;
+      },
+      signAllTransactions: async (txs: any[]) => {
+        txs.forEach(tx => tx.partialSign(adminKeypair));
+        return txs;
+      }
+    };
+
+    const result = await sendClientTransactions(client, walletAdapter, txResponse.tx);
 
     console.log("✅ Profiles tree created!");
-    console.log("🔗 Transaction Signature:", signature);
+    console.log("🔗 Transaction Result:", result);
   } catch (error) {
     console.error("❌ Failed to create profiles tree:", error);
   }

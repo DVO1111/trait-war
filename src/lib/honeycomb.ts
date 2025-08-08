@@ -10,5 +10,5 @@ export const honeycombClient = createEdgeClient(API_URL, true);
 export const TRAIT_WARS_PROJECT_NAME = "Trait Wars";
 
 // If you have an existing project ID, set it here:
-// export const EXISTING_PROJECT_ID = "your-project-address-here";
-export const EXISTING_PROJECT_ID = null; // Set this to your project address if you have one
+// Replace with your actual project address from the Project Finder
+export const EXISTING_PROJECT_ID = "4CJDJpvqpgxXZKjv6n8Fx6u9kPdgbALGvjYRkqk8J2E8"; // Update this with your project address

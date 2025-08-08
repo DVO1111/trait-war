@@ -160,6 +160,7 @@ export const useHoneycombAdvanced = () => {
       return null;
     }
 
+    console.log('Creating user...', { userInfo, wallet: wallet.publicKey.toString() });
     setLoading(true);
     try {
       const { createNewUserTransaction: txResponse } = 
@@ -173,7 +174,9 @@ export const useHoneycombAdvanced = () => {
           payer: wallet.publicKey.toString(),
         });
 
+      console.log('User transaction response:', txResponse);
       const response = await sendClientTransactions(honeycombClient, wallet, txResponse);
+      console.log('User transaction sent:', response);
 
       if (response) {
         toast({
@@ -211,6 +214,7 @@ export const useHoneycombAdvanced = () => {
       return null;
     }
 
+    console.log('Creating user with profile...', { projectAddress, userInfo, profileIdentity });
     setLoading(true);
     try {
       const { createNewUserWithProfileTransaction: txResponse } = 
@@ -226,7 +230,9 @@ export const useHoneycombAdvanced = () => {
           },
         });
 
+      console.log('Transaction response received:', txResponse);
       const response = await sendClientTransactions(honeycombClient, wallet, txResponse);
+      console.log('Transaction sent and confirmed:', response);
 
       if (response) {
         toast({
