@@ -41,11 +41,19 @@ export const HoneycombAdvancedDemo = () => {
 
   const handleCreateProject = async () => {
     if (!projectName.trim()) return;
-    await createProject(projectName, {
+    const newProject = await createProject(projectName, {
       achievements: ["Pioneer", "Creator", "Explorer", "Champion"],
       customDataFields: ["NFTs owned", "Level", "XP", "Achievements"]
     });
+    if (newProject) {
+      // Auto-copy the project ID to clipboard
+      navigator.clipboard.writeText(newProject.address);
+    }
     setProjectName('');
+  };
+
+  const copyProjectId = (projectId: string) => {
+    navigator.clipboard.writeText(projectId);
   };
 
   const handleCreateProfilesTree = async () => {
@@ -132,19 +140,25 @@ export const HoneycombAdvancedDemo = () => {
               <CardTitle>Project Management</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Project name"
-                  value={projectName}
-                  onChange={(e) => setProjectName(e.target.value)}
-                  className="flex-1"
-                />
-                <Button 
-                  onClick={handleCreateProject} 
-                  disabled={loading || !projectName.trim()}
-                >
-                  Create Project
-                </Button>
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Enter your project name (e.g., 'My Game', 'NFT Collection')"
+                    value={projectName}
+                    onChange={(e) => setProjectName(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button 
+                    onClick={handleCreateProject} 
+                    disabled={loading || !projectName.trim()}
+                    className="min-w-[120px]"
+                  >
+                    {loading ? "Creating..." : "Create Project"}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  This will create a new Honeycomb project with predefined achievements and custom data fields. The project ID will be automatically copied to your clipboard.
+                </p>
               </div>
               
               <Separator />
@@ -156,10 +170,23 @@ export const HoneycombAdvancedDemo = () => {
                 ) : (
                   <div className="space-y-2">
                     {projects.map((project) => (
-                      <div key={project.address} className="flex items-center justify-between p-2 border rounded">
-                        <div>
-                          <p className="font-medium">{project.name}</p>
-                          <p className="text-xs text-muted-foreground">{project.address}</p>
+                      <div key={project.address} className="flex items-center justify-between p-3 border rounded bg-muted/20">
+                        <div className="flex-1">
+                          <p className="font-medium text-lg">{project.name}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="secondary">Project ID</Badge>
+                            <code className="text-xs bg-background px-2 py-1 rounded border">
+                              {project.address}
+                            </code>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => copyProjectId(project.address)}
+                              className="h-6 px-2"
+                            >
+                              Copy ID
+                            </Button>
+                          </div>
                         </div>
                         <div className="flex gap-2">
                           <Button
