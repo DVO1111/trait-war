@@ -9,6 +9,6 @@ export const honeycombClient = createEdgeClient(API_URL, true);
 // Honeycomb constants for Trait Wars project
 export const TRAIT_WARS_PROJECT_NAME = "Trait Wars";
 
-// If you have an existing project ID, set it here:
+// If you have an existing project ID, set it here:DHznp6KzwSy4bcetNELaemeNP73BNfHFYBGsCD1GQEyk
 // export const EXISTING_PROJECT_ID = "your-project-address-here";
-export const EXISTING_PROJECT_ID = null; // Set this to your project address if you have one
+export const EXISTING_PROJECT_ID = "DHznp6KzwSy4bcetNELaemeNP73BNfHFYBGsCD1GQEyk"; // Set this to your project address if you have one
