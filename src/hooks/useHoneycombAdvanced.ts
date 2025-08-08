@@ -52,8 +52,14 @@ export const useHoneycombAdvanced = () => {
   const [users, setUsers] = useState<HoneycombUser[]>([]);
   const [profiles, setProfiles] = useState<HoneycombProfile[]>([]);
 
-  // Create project with proper authority
-  const createProject = useCallback(async (projectName: string) => {
+  // Create project with proper authority and profile data config
+  const createProject = useCallback(async (
+    projectName: string,
+    config?: {
+      achievements?: string[];
+      customDataFields?: string[];
+    }
+  ) => {
     if (!wallet.publicKey || !wallet.signTransaction) {
       toast({
         title: "Wallet not connected",
@@ -63,15 +69,23 @@ export const useHoneycombAdvanced = () => {
       return null;
     }
 
+    console.log('Creating project...', { projectName, config, authority: wallet.publicKey.toString() });
     setLoading(true);
     try {
       const { createCreateProjectTransaction: { project: projectAddress, tx } } = 
         await honeycombClient.createCreateProjectTransaction({
           name: projectName,
           authority: wallet.publicKey.toBase58(),
+          payer: wallet.publicKey.toBase58(),
+          profileDataConfig: {
+            achievements: config?.achievements || ["Pioneer", "Creator", "Explorer"],
+            customDataFields: config?.customDataFields || ["NFTs owned", "Level", "XP"],
+          },
         });
 
+      console.log('Project transaction created:', { projectAddress, tx });
       const response = await sendClientTransactions(honeycombClient, wallet, tx);
+      console.log('Project creation response:', response);
 
       if (response) {
         const newProject: HoneycombProject = {
@@ -117,6 +131,7 @@ export const useHoneycombAdvanced = () => {
       return false;
     }
 
+    console.log('Creating profiles tree...', { projectAddress, config });
     setLoading(true);
     try {
       const { createCreateProfilesTreeTransaction: txResponse } = 
@@ -126,7 +141,9 @@ export const useHoneycombAdvanced = () => {
           treeConfig: config,
         });
 
+      console.log('Profiles tree transaction created:', txResponse);
       const response = await sendClientTransactions(honeycombClient, wallet, txResponse.tx);
+      console.log('Profiles tree creation response:', response);
 
       if (response) {
         toast({

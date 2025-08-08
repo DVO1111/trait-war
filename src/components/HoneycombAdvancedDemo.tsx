@@ -41,7 +41,10 @@ export const HoneycombAdvancedDemo = () => {
 
   const handleCreateProject = async () => {
     if (!projectName.trim()) return;
-    await createProject(projectName);
+    await createProject(projectName, {
+      achievements: ["Pioneer", "Creator", "Explorer", "Champion"],
+      customDataFields: ["NFTs owned", "Level", "XP", "Achievements"]
+    });
     setProjectName('');
   };
 
