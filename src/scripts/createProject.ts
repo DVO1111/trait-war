@@ -1,17 +1,16 @@
-// src/scripts/createProject.ts
+// src/scripts/createProfilesTree.ts
+
 import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 import { readFileSync } from "fs";
 import path from "path";
-import sendAndConfirmTransaction from "@honeycomb-protocol/edge-client/dist/esm/sendAndConfirmTransaction";
-import { createEdgeClient } from "@honeycomb-protocol/edge-client";
+import { client } from "../constants/client";
+import { CreateCreateProfilesTreeTransactionQuery } from "@honeycomb-protocol/edge-client";
 
-// --- 1. Setup constants
+// --- Constants
 const RPC_URL = "https://rpc.test.honeycombprotocol.com";
-const EDGE_API_URL = "https://edge.main.honeycombprotocol.com";
-const PROJECT_ID = "YOUR_PROJECT_ID"; // <-- Replace this with your actual project address
-const PROJECT_NAME = "Test Trait War Project";
+const PROJECT_ID = "YOUR_PROJECT_ID"; // Replace with actual project ID
 
-// --- 2. Load Solana Keypair from local path
+// --- Load keypair
 function loadKeypair(): Keypair {
   const SOLANA_KEYPAIR_PATH = path.join(
     process.env.HOME || process.env.USERPROFILE || "",
@@ -19,19 +18,17 @@ function loadKeypair(): Keypair {
     "solana",
     "id.json"
   );
-
   const secretKeyString = readFileSync(SOLANA_KEYPAIR_PATH, "utf8");
   const secretKey = Uint8Array.from(JSON.parse(secretKeyString));
   return Keypair.fromSecretKey(secretKey);
 }
 
-// --- 3. Set up dependencies
-const connection = new Connection(RPC_URL);
-const client = createEdgeClient(EDGE_API_URL, true);
+// --- Setup
+const connection = new Connection(RPC_URL, "confirmed");
 const adminKeypair = loadKeypair();
 const projectAddress = new PublicKey(PROJECT_ID);
 
-// --- 4. Create Profiles Tree
+// --- Create Profiles Tree
 async function createProfilesTree() {
   try {
     const txResponse = await client.createCreateProfilesTreeTransaction({
@@ -46,7 +43,7 @@ async function createProfilesTree() {
 
     console.log("Transaction built. Sending...");
 
-    const { signature } = await sendAndConfirmTransaction({
+    const signature = sendAndConfirmTransaction({
       connection,
       transactionResponse: txResponse,
       signers: [adminKeypair],
@@ -59,4 +56,9 @@ async function createProfilesTree() {
   }
 }
 
-createProfilesTree();
+createProfilesTree(); // ✅ This should be at the end
+
+function sendAndConfirmTransaction(arg0: { connection: Connection; transactionResponse: CreateCreateProfilesTreeTransactionQuery; signers: Keypair[]; }) {
+  throw new Error("Function not implemented.");
+}
+
