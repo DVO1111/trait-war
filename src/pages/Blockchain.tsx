@@ -18,6 +18,7 @@ import {
   Settings,
   AlertCircle
 } from 'lucide-react';
+import Animated2D from '@/components/Animated2D';
 
 export default function Blockchain() {
   const {
@@ -87,6 +88,10 @@ export default function Blockchain() {
         <p className="text-muted-foreground">
           Manage your on-chain assets, rewards, and blockchain features
         </p>
+      </div>
+
+      <div className="flex justify-center">
+        <Animated2D ariaLabel="Blockchain 2D animation" className="animate-fade-in hover-scale" />
       </div>
 
       {/* Setup Progress */}
