@@ -212,7 +212,9 @@ export function GameLayout({ children }: GameLayoutProps) {
         </header>
         
         <main className="min-h-screen">
-          {children}
+          <div key={location.pathname} className="animate-enter">
+            {children}
+          </div>
         </main>
       </div>
     </div>

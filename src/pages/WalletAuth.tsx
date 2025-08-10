@@ -82,7 +82,7 @@ export default function WalletAuth() {
   // Show loading state
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-background animate-enter">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
           <p className="mt-2 text-muted-foreground">Connecting to wallet...</p>
@@ -94,7 +94,7 @@ export default function WalletAuth() {
   // If authenticated but needs profile setup
   if (isAuthenticated && needsProfileSetup) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="min-h-screen flex items-center justify-center bg-background p-4 animate-enter">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
@@ -179,7 +179,7 @@ export default function WalletAuth() {
 
   // Main wallet connection screen
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 animate-enter">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
