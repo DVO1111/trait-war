@@ -140,21 +140,43 @@ export const useHoneycomb = () => {
 
       console.log('Transaction response:', response);
 
-      if (response) {
+      // Determine if the tx actually finalized/succeeded
+      const anyResp: any = response as any;
+      const bundles: any[] = Array.isArray(anyResp)
+        ? anyResp
+        : (anyResp && anyResp.responses ? [anyResp] : []);
+      const finalized = bundles.some((bundle: any) =>
+        Array.isArray(bundle?.responses) &&
+        bundle.responses.some((r: any) => {
+          const status = String(r?.status || '').toLowerCase();
+          return status === 'finalized' || (!!r?.signature && !r?.error);
+        })
+      );
+
+      if (finalized) {
         const newProject = {
           address: projectAddress,
           name: TRAIT_WARS_PROJECT_NAME,
         };
         setProject(newProject);
         localStorage.setItem('honeycomb_project', JSON.stringify(newProject));
-        
+
+        // Give the indexers a moment to register the project
+        await new Promise(res => setTimeout(res, 2000));
+
         toast({
           title: "Project created successfully!",
           description: `Trait Wars project created on-chain`,
         });
-        
+
         return newProject;
       }
+
+      toast({
+        title: "Transaction failed",
+        description: "Project creation transaction did not finalize. Please try again after topping up SOL.",
+        variant: "destructive",
+      });
       return null;
     } catch (error) {
       console.error('Detailed error creating project:', error);
@@ -252,37 +274,76 @@ export const useHoneycomb = () => {
       console.error('Error creating profiles tree:', error);
       let errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
       
-      // If the project isn't yet visible on-chain, wait and retry once
+      // If the project isn't yet visible on-chain, wait and retry with backoff; if it still fails, clear cached project
       if (
         (typeof errorMessage === 'string' && errorMessage.includes("Couldn't find project")) ||
         (typeof errorMessage === 'string' && errorMessage.toLowerCase().includes('project not found'))
       ) {
         console.warn('Project may not be registered yet. Retrying after delay...');
+        // First retry after 2.5s
         await new Promise(res => setTimeout(res, 2500));
         try {
-          const retry = await honeycombClient.createCreateProfilesTreeTransaction({
+          const retry1 = await honeycombClient.createCreateProfilesTreeTransaction({
             payer: wallet.publicKey!.toBase58(),
             project: targetProject.address,
             treeConfig: { basic: { numAssets: 10000 } },
           });
-          const retryResponse = await sendClientTransactions(
+          const retryResp1 = await sendClientTransactions(
             honeycombClient,
             wallet,
-            retry.createCreateProfilesTreeTransaction.tx
+            retry1.createCreateProfilesTreeTransaction.tx
           );
-          if (retryResponse) {
+          if (retryResp1) {
             toast({
               title: "Profiles tree created!",
               description: "Profiles tree created after retry.",
             });
             return true;
           }
-        } catch (retryErr) {
-          console.error('Retry failed:', retryErr);
+        } catch (retryErr1) {
+          console.error('Retry #1 failed:', retryErr1);
         }
-        errorMessage = "Project not found yet on-chain. Please wait a few seconds after creating the project, then try again.";
+
+        // Second retry after an additional 3.5s
+        await new Promise(res => setTimeout(res, 3500));
+        try {
+          const retry2 = await honeycombClient.createCreateProfilesTreeTransaction({
+            payer: wallet.publicKey!.toBase58(),
+            project: targetProject.address,
+            treeConfig: { basic: { numAssets: 10000 } },
+          });
+          const retryResp2 = await sendClientTransactions(
+            honeycombClient,
+            wallet,
+            retry2.createCreateProfilesTreeTransaction.tx
+          );
+          if (retryResp2) {
+            toast({
+              title: "Profiles tree created!",
+              description: "Profiles tree created after second retry.",
+            });
+            return true;
+          }
+        } catch (retryErr2) {
+          console.error('Retry #2 failed:', retryErr2);
+        }
+
+        // If it still fails, clear potentially stale project cache and ask user to recreate
+        try {
+          const cached = localStorage.getItem('honeycomb_project');
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            if (parsed?.address === targetProject.address) {
+              localStorage.removeItem('honeycomb_project');
+              setProject(null);
+            }
+          }
+        } catch (cacheErr) {
+          console.warn('Failed to clear cached project:', cacheErr);
+        }
+
+        errorMessage = "We couldn't verify this project on-chain. The cached project was cleared. Please create the project again, wait ~10s, then create the profiles tree.";
       }
-      
       toast({
         title: "Error creating profiles tree",
         description: errorMessage,
