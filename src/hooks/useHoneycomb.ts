@@ -37,20 +37,47 @@ export const useHoneycomb = () => {
   const [characters, setCharacters] = useState<HoneycombCharacter[]>([]);
 
   // Ensure the wallet has enough testnet SOL; attempts a devnet airdrop if low
-  const ensureTestnetFunds = useCallback(async (minSol = 0.05) => {
+  const ensureTestnetFunds = useCallback(async (minSol = 0.1) => {
     try {
-      if (!wallet.publicKey) return;
+      if (!wallet.publicKey) return false;
       const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
-      const balance = await connection.getBalance(wallet.publicKey);
+      
+      // Check current balance
+      let balance = await connection.getBalance(wallet.publicKey);
+      console.log('Current balance:', balance / LAMPORTS_PER_SOL, 'SOL');
+      
       if (balance < minSol * LAMPORTS_PER_SOL) {
-        console.log('Requesting devnet airdrop to cover fees...');
-        const sig = await connection.requestAirdrop(wallet.publicKey, Math.ceil(0.2 * LAMPORTS_PER_SOL));
-        await connection.confirmTransaction(sig, 'confirmed');
+        console.log('Requesting devnet airdrop...');
+        try {
+          const airdropAmount = Math.max(0.5 * LAMPORTS_PER_SOL, (minSol + 0.1) * LAMPORTS_PER_SOL);
+          const sig = await connection.requestAirdrop(wallet.publicKey, airdropAmount);
+          await connection.confirmTransaction(sig, 'confirmed');
+          
+          // Verify the airdrop worked
+          balance = await connection.getBalance(wallet.publicKey);
+          console.log('Balance after airdrop:', balance / LAMPORTS_PER_SOL, 'SOL');
+          
+          if (balance < minSol * LAMPORTS_PER_SOL) {
+            throw new Error('Airdrop insufficient');
+          }
+          
+          return true;
+        } catch (airdropError) {
+          console.error('Airdrop failed:', airdropError);
+          toast({
+            title: "Insufficient SOL",
+            description: "Please add testnet SOL to your wallet manually. Visit https://faucet.solana.com",
+            variant: "destructive",
+          });
+          return false;
+        }
       }
+      return true;
     } catch (e) {
-      console.warn('Airdrop failed or not available:', e);
+      console.error('Fund check failed:', e);
+      return false;
     }
-  }, [wallet.publicKey]);
+  }, [wallet.publicKey, toast]);
 
   // Create a new Honeycomb project
   const createProject = useCallback(async () => {
@@ -65,6 +92,15 @@ export const useHoneycomb = () => {
 
     setLoading(true);
     try {
+      console.log('Ensuring funds before project creation...');
+      const hasFunds = await ensureTestnetFunds(0.15);
+      if (!hasFunds) {
+        return null;
+      }
+
+      // Add a small delay to ensure the airdrop is fully processed
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
       console.log('Creating project with wallet:', wallet.publicKey.toBase58());
       console.log('Creating project with name:', TRAIT_WARS_PROJECT_NAME);
       
@@ -72,6 +108,7 @@ export const useHoneycomb = () => {
         await honeycombClient.createCreateProjectTransaction({
           name: TRAIT_WARS_PROJECT_NAME,
           authority: wallet.publicKey.toBase58(),
+          payer: wallet.publicKey.toBase58(),
           subsidizeFees: true,
         });
 
@@ -107,7 +144,14 @@ export const useHoneycomb = () => {
       let errorMessage = "Unknown error occurred";
       if (error instanceof Error) {
         if (error.message.includes("Attempt to debit an account but found no record of a prior credit")) {
-          errorMessage = "Insufficient SOL balance. Please add testnet SOL to your wallet first.";
+          errorMessage = "Insufficient SOL balance. Requesting additional funds...";
+          // Try one more airdrop
+          const hasMoreFunds = await ensureTestnetFunds(0.2);
+          if (hasMoreFunds) {
+            errorMessage += " Please try again.";
+          } else {
+            errorMessage = "Unable to get sufficient testnet SOL. Please visit https://faucet.solana.com";
+          }
         } else {
           errorMessage = error.message;
         }
@@ -122,7 +166,7 @@ export const useHoneycomb = () => {
     } finally {
       setLoading(false);
     }
-  }, [wallet, toast]);
+  }, [wallet, toast, ensureTestnetFunds]);
 
   // Create a profiles tree first (required before creating profiles)
   const createProfilesTree = useCallback(async (projectToUse?: HoneycombProject) => {
@@ -147,7 +191,16 @@ export const useHoneycomb = () => {
 
     setLoading(true);
     try {
-      await ensureTestnetFunds();
+      console.log('Ensuring funds before profiles tree creation...');
+      const hasFunds = await ensureTestnetFunds(0.1);
+      if (!hasFunds) {
+        return false;
+      }
+
+      // Add a small delay to ensure funds are available
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      console.log('Creating profiles tree for project:', targetProject.address);
       const { createCreateProfilesTreeTransaction: txResponse } = 
         await honeycombClient.createCreateProfilesTreeTransaction({
           payer: wallet.publicKey.toBase58(),
@@ -159,11 +212,14 @@ export const useHoneycomb = () => {
           },
         });
 
+      console.log('Profiles tree transaction created:', txResponse);
       const response = await sendClientTransactions(
         honeycombClient,
         wallet,
         txResponse.tx
       );
+
+      console.log('Profiles tree response:', response);
 
       if (response) {
         toast({
@@ -175,16 +231,22 @@ export const useHoneycomb = () => {
       return false;
     } catch (error) {
       console.error('Error creating profiles tree:', error);
+      let errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      
+      if (errorMessage.includes("Couldn't find project")) {
+        errorMessage = "Project not found. Please ensure the project was created successfully first.";
+      }
+      
       toast({
         title: "Error creating profiles tree",
-        description: error instanceof Error ? error.message : "Unknown error occurred",
+        description: errorMessage,
         variant: "destructive",
       });
       return false;
     } finally {
       setLoading(false);
     }
-  }, [wallet, project, toast]);
+  }, [wallet, project, toast, ensureTestnetFunds]);
 
   // Create a user and profile with automatic NFT minting
   const createUserAndProfile = useCallback(async (name: string, bio?: string, projectToUse?: HoneycombProject) => {
