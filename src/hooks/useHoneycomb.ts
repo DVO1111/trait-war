@@ -1,7 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { Connection, clusterApiUrl, LAMPORTS_PER_SOL } from '@solana/web3.js';
-import { honeycombClient, TRAIT_WARS_PROJECT_NAME } from '@/lib/honeycomb';
+import { honeycombClient, TRAIT_WARS_PROJECT_NAME, EXISTING_PROJECT_ID } from '@/lib/honeycomb';
 import { sendClientTransactions } from "@honeycomb-protocol/edge-client/client/walletHelpers";
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -35,6 +35,24 @@ export const useHoneycomb = () => {
   const [project, setProject] = useState<HoneycombProject | null>(null);
   const [honeycombProfile, setHoneycombProfile] = useState<HoneycombProfile | null>(null);
   const [characters, setCharacters] = useState<HoneycombCharacter[]>([]);
+
+  // Restore saved project from localStorage or configured constant
+  useEffect(() => {
+    try {
+      if (!project) {
+        const saved = localStorage.getItem('honeycomb_project');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed?.address) setProject(parsed);
+        } else if (typeof EXISTING_PROJECT_ID === 'string' && EXISTING_PROJECT_ID.length > 0) {
+          setProject({ address: EXISTING_PROJECT_ID, name: TRAIT_WARS_PROJECT_NAME });
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to restore project from storage', e);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Ensure the wallet has enough testnet SOL; attempts a devnet airdrop if low
   const ensureTestnetFunds = useCallback(async (minSol = 0.1) => {
@@ -128,6 +146,7 @@ export const useHoneycomb = () => {
           name: TRAIT_WARS_PROJECT_NAME,
         };
         setProject(newProject);
+        localStorage.setItem('honeycomb_project', JSON.stringify(newProject));
         
         toast({
           title: "Project created successfully!",
@@ -233,8 +252,35 @@ export const useHoneycomb = () => {
       console.error('Error creating profiles tree:', error);
       let errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
       
-      if (errorMessage.includes("Couldn't find project")) {
-        errorMessage = "Project not found. Please ensure the project was created successfully first.";
+      // If the project isn't yet visible on-chain, wait and retry once
+      if (
+        (typeof errorMessage === 'string' && errorMessage.includes("Couldn't find project")) ||
+        (typeof errorMessage === 'string' && errorMessage.toLowerCase().includes('project not found'))
+      ) {
+        console.warn('Project may not be registered yet. Retrying after delay...');
+        await new Promise(res => setTimeout(res, 2500));
+        try {
+          const retry = await honeycombClient.createCreateProfilesTreeTransaction({
+            payer: wallet.publicKey!.toBase58(),
+            project: targetProject.address,
+            treeConfig: { basic: { numAssets: 10000 } },
+          });
+          const retryResponse = await sendClientTransactions(
+            honeycombClient,
+            wallet,
+            retry.createCreateProfilesTreeTransaction.tx
+          );
+          if (retryResponse) {
+            toast({
+              title: "Profiles tree created!",
+              description: "Profiles tree created after retry.",
+            });
+            return true;
+          }
+        } catch (retryErr) {
+          console.error('Retry failed:', retryErr);
+        }
+        errorMessage = "Project not found yet on-chain. Please wait a few seconds after creating the project, then try again.";
       }
       
       toast({
