@@ -57,3 +57,24 @@ This project is built with:
 ```bash
 git clone https://github.com/yourusername/trait-war.git
 cd trait-war
+
+2️⃣ Install dependencies
+bash
+npm install
+3️⃣ Run the development server
+bash
+npm run dev
+
+
+📌 Notes
+Ensure you have a Solana wallet (e.g., Phantom) installed.
+
+This project uses the Honeycomb Protocol API — you'll need valid API credentials to interact fully.
+
+📄 License
+This project is licensed under the MIT License – feel free to use and adapt.
+
+💡 Contributions Welcome
+If you’d like to contribute to Trait War, open a pull request or submit an issue on GitHub.
+
+
