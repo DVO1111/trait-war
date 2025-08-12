@@ -18,6 +18,7 @@ import {
   Settings,
   AlertCircle
 } from 'lucide-react';
+import Animated2D from '@/components/Animated2D';
 
 export default function Blockchain() {
   const {
