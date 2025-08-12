@@ -272,18 +272,18 @@ export const UserOnboarding = ({ isOpen, onClose }: UserOnboardingProps) => {
             </Button>
             
             <div className="flex gap-2">
-              <Button
-                onClick={nextStep}
-                disabled={currentStep >= steps.length - 1}
-                className="bg-gaming-accent text-gaming-text hover:bg-gaming-accent/80 disabled:opacity-80 disabled:text-gaming-text"
-              >
-                Next Step
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-              {currentStep >= steps.length - 1 && (
+              {currentStep < steps.length - 1 ? (
+                <Button
+                  onClick={nextStep}
+                  className="bg-gaming-accent text-black hover:bg-gaming-accent/80"
+                >
+                  Next Step
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              ) : (
                 <Button
                   onClick={handleComplete}
-                  className="bg-gaming-accent text-gaming-text hover:bg-gaming-accent/80"
+                  className="bg-gaming-accent text-black hover:bg-gaming-accent/80"
                 >
                   Let's Build!
                   <Zap className="ml-2 h-4 w-4" />

@@ -44,16 +44,17 @@ export const useWalletAuth = () => {
     try {
       setLoading(true);
       
-      // Check if profile exists via secure RPC
-      const { data, error } = await (supabase as any)
-        .rpc('get_profile_by_wallet', { p_wallet_address: walletAddress });
+      // Check if profile exists
+      const { data: existingProfile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('wallet_address', walletAddress)
+        .single();
 
-      if (error) {
-        console.error('Error checking profile via RPC:', error);
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+        console.error('Error checking profile:', error);
         return;
       }
-
-      const existingProfile = Array.isArray(data) ? data[0] : data;
 
       if (existingProfile) {
         // Update last login
