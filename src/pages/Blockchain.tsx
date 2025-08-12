@@ -18,21 +18,10 @@ import {
   Settings,
   AlertCircle
 } from 'lucide-react';
-import Animated2D from '@/components/Animated2D';
 
 export default function Blockchain() {
   const {
-    blockchainStatus,
-    loading,
-    project,
-    honeycombProfile,
-    characters,
-    userRewards,
-    initializeFullBlockchain,
-    createCustomCharacterNFT,
-    isFullyInitialized,
-    walletConnected,
-    isAuthenticated,
+    blockchainStatus, loading, project, honeycombProfile, characters, userRewards, initializeFullBlockchain, createCustomCharacterNFT, isFullyInitialized, walletConnected, isAuthenticated,
   } = useFullBlockchainIntegration();
 
   const [characterName, setCharacterName] = useState('');
@@ -111,7 +100,7 @@ export default function Blockchain() {
               </span>
             </div>
             <Progress value={calculateSetupProgress()} className="h-2" />
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
               <div className="flex items-center gap-3">
                 {getStatusIcon(blockchainStatus.projectInitialized)}
@@ -120,7 +109,7 @@ export default function Blockchain() {
                   {blockchainStatus.projectInitialized ? 'Ready' : 'Pending'}
                 </Badge>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 {getStatusIcon(blockchainStatus.profilesTreeCreated)}
                 <span className="text-sm">Profiles Tree Created</span>
@@ -128,7 +117,7 @@ export default function Blockchain() {
                   {blockchainStatus.profilesTreeCreated ? 'Ready' : 'Pending'}
                 </Badge>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 {getStatusIcon(blockchainStatus.userProfileCreated)}
                 <span className="text-sm">User Profile Created</span>
@@ -136,7 +125,7 @@ export default function Blockchain() {
                   {blockchainStatus.userProfileCreated ? 'Ready' : 'Pending'}
                 </Badge>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 {getStatusIcon(blockchainStatus.characterCreated)}
                 <span className="text-sm">Character Created</span>
@@ -155,10 +144,10 @@ export default function Blockchain() {
                   </span>
                 </div>
                 <p className="text-sm text-amber-700 mb-4">
-                  Initialize your blockchain profile to access all features including 
+                  Initialize your blockchain profile to access all features including
                   NFT rewards, on-chain verification, and token rewards.
                 </p>
-                <Button 
+                <Button
                   onClick={initializeFullBlockchain}
                   disabled={loading}
                   className="w-full"
@@ -258,8 +247,7 @@ export default function Blockchain() {
                       value={characterName}
                       onChange={(e) => setCharacterName(e.target.value)}
                       className="w-full p-2 border border-gray-300 rounded-md"
-                      placeholder="Enter character name"
-                    />
+                      placeholder="Enter character name" />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -271,11 +259,10 @@ export default function Blockchain() {
                         max="100"
                         value={customTraits.strength}
                         onChange={(e) => setCustomTraits(prev => ({ ...prev, strength: parseInt(e.target.value) }))}
-                        className="w-full"
-                      />
+                        className="w-full" />
                       <span className="text-sm text-muted-foreground">{customTraits.strength}</span>
                     </div>
-                    
+
                     <div>
                       <label className="text-sm font-medium mb-2 block">Agility</label>
                       <input
@@ -284,11 +271,10 @@ export default function Blockchain() {
                         max="100"
                         value={customTraits.agility}
                         onChange={(e) => setCustomTraits(prev => ({ ...prev, agility: parseInt(e.target.value) }))}
-                        className="w-full"
-                      />
+                        className="w-full" />
                       <span className="text-sm text-muted-foreground">{customTraits.agility}</span>
                     </div>
-                    
+
                     <div>
                       <label className="text-sm font-medium mb-2 block">Intelligence</label>
                       <input
@@ -297,11 +283,10 @@ export default function Blockchain() {
                         max="100"
                         value={customTraits.intelligence}
                         onChange={(e) => setCustomTraits(prev => ({ ...prev, intelligence: parseInt(e.target.value) }))}
-                        className="w-full"
-                      />
+                        className="w-full" />
                       <span className="text-sm text-muted-foreground">{customTraits.intelligence}</span>
                     </div>
-                    
+
                     <div>
                       <label className="text-sm font-medium mb-2 block">Element</label>
                       <select
@@ -317,7 +302,7 @@ export default function Blockchain() {
                     </div>
                   </div>
 
-                  <Button 
+                  <Button
                     onClick={() => createCustomCharacterNFT(characterName, customTraits)}
                     disabled={!characterName || loading}
                     className="w-full"
@@ -347,7 +332,7 @@ export default function Blockchain() {
         <TabsContent value="advanced" className="space-y-6">
           <ProjectFinder />
           <HoneycombAdvancedDemo />
-          
+
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
