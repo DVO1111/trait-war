@@ -34,8 +34,8 @@ Trait War is fully integrated with the **Honeycomb Protocol**:
 
 You can view the live demo or a walkthrough of Trait War here:  
 
-**🔗 [Live Demo Link](#)** *(replace `#` with your hosted link)*  
-**📹 Video Walkthrough:** *(add your screen recording link here — e.g., Loom, YouTube, or GitHub asset)*  
+**🔗 [Live Demo Link](https://trairwarcom.site/)**  
+**📹 Video Walkthrough:**   
 
 ---
 
