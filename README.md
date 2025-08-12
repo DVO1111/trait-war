@@ -34,8 +34,8 @@ Trait War is fully integrated with the **Honeycomb Protocol**:
 
 You can view the live demo or a walkthrough of Trait War here:  
 
-**🔗 [Live Demo Link](https://trairwarcom.site/)** 
-**📹 Video Walkthrough:**
+**🔗 [Live Demo Link](#)** *(replace `#` with your hosted link)*  
+**📹 Video Walkthrough:** *(add your screen recording link here — e.g., Loom, YouTube, or GitHub asset)*  
 
 ---
 
@@ -57,24 +57,34 @@ This project is built with:
 ```bash
 git clone https://github.com/yourusername/trait-war.git
 cd trait-war
+```
 
-2️⃣ Install dependencies
-bash
+### 2️⃣ Install dependencies
+```bash
 npm install
-3️⃣ Run the development server
-bash
+```
+
+### 3️⃣ Run the development server
+
+```bash
 npm run dev
+```
 
+---
 
-📌 Notes
-Ensure you have a Solana wallet (e.g., Phantom) installed.
+## 📌 Notes
 
-This project uses the Honeycomb Protocol API — you'll need valid API credentials to interact fully.
+* Ensure you have a Solana wallet (e.g., Phantom) installed.
+* This project uses the Honeycomb Protocol API — you'll need valid API credentials to interact fully.
 
-📄 License
-This project is licensed under the MIT License – feel free to use and adapt.
+---
 
-💡 Contributions Welcome
+## 📄 License
+
+This project is licensed under the **MIT License** – feel free to use and adapt.
+
+---
+
+### 💡 Contributions Welcome
+
 If you’d like to contribute to Trait War, open a pull request or submit an issue on GitHub.
-
-
