@@ -1,8 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { Connection, clusterApiUrl, LAMPORTS_PER_SOL } from '@solana/web3.js';
-import { honeycombClient, TRAIT_WARS_PROJECT_NAME } from '@/lib/honeycomb';
 import { sendClientTransactions } from "@honeycomb-protocol/edge-client/client/walletHelpers";
+import { honeycombClient, TRAIT_WARS_PROJECT_NAME } from '@/lib/honeycomb';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { getSafeErrorMessage } from '@/lib/security';
@@ -36,22 +35,6 @@ export const useHoneycomb = () => {
   const [honeycombProfile, setHoneycombProfile] = useState<HoneycombProfile | null>(null);
   const [characters, setCharacters] = useState<HoneycombCharacter[]>([]);
 
-  // Ensure the wallet has enough testnet SOL; attempts a devnet airdrop if low
-  const ensureTestnetFunds = useCallback(async (minSol = 0.05) => {
-    try {
-      if (!wallet.publicKey) return;
-      const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
-      const balance = await connection.getBalance(wallet.publicKey);
-      if (balance < minSol * LAMPORTS_PER_SOL) {
-        console.log('Requesting devnet airdrop to cover fees...');
-        const sig = await connection.requestAirdrop(wallet.publicKey, Math.ceil(0.2 * LAMPORTS_PER_SOL));
-        await connection.confirmTransaction(sig, 'confirmed');
-      }
-    } catch (e) {
-      console.warn('Airdrop failed or not available:', e);
-    }
-  }, [wallet.publicKey]);
-
   // Create a new Honeycomb project
   const createProject = useCallback(async () => {
     if (!wallet.publicKey || !wallet.signTransaction) {
@@ -72,7 +55,6 @@ export const useHoneycomb = () => {
         await honeycombClient.createCreateProjectTransaction({
           name: TRAIT_WARS_PROJECT_NAME,
           authority: wallet.publicKey.toBase58(),
-          subsidizeFees: true,
         });
 
       console.log('Project transaction created:', { projectAddress, txResponse });
@@ -147,7 +129,6 @@ export const useHoneycomb = () => {
 
     setLoading(true);
     try {
-      await ensureTestnetFunds();
       const { createCreateProfilesTreeTransaction: txResponse } = 
         await honeycombClient.createCreateProfilesTreeTransaction({
           payer: wallet.publicKey.toBase58(),
@@ -219,7 +200,6 @@ export const useHoneycomb = () => {
     setLoading(true);
     try {
       // Step 1: Create user and profile
-      await ensureTestnetFunds();
       const { createNewUserWithProfileTransaction: txResponse } = 
         await honeycombClient.createNewUserWithProfileTransaction({
           project: targetProject.address,
