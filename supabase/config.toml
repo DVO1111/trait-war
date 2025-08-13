@@ -1,3 +1,5 @@
+project_id = "yjdyuywsqlzejlfvgdmy"
+
 [project]
 id = "yjdyuywsqlzejlfvgdmy"
 
@@ -14,6 +16,8 @@ dir = "supabase/migrations"
 [functions]
 dir = "supabase/functions"
 
+[functions.initialize-blockchain-profile]
+verify_jwt = false
 
 [auth]
 enabled = true
