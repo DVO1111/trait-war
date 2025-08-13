@@ -74,10 +74,10 @@ export const useFullBlockchainIntegration = () => {
 
   // Initialize full blockchain system
   const initializeFullBlockchain = useCallback(async () => {
-    if (!isAuthenticated || !userProfile) {
+    if (!walletConnected) {
       toast({
-        title: "Authentication required",
-        description: "Please connect and authenticate your wallet first",
+        title: "Wallet not connected",
+        description: "Please connect your wallet first",
         variant: "destructive",
       });
       return false;
@@ -135,8 +135,8 @@ export const useFullBlockchainIntegration = () => {
         while (!result && retryCount < maxRetries) {
           try {
             result = await createUserAndProfile(
-              userProfile.display_name || userProfile.username || 'Warrior',
-              userProfile.bio || 'Trait Wars participant',
+              userProfile?.display_name || userProfile?.username || 'Warrior',
+              userProfile?.bio || 'Trait Wars participant',
               currentProject
             );
             if (!result && retryCount < maxRetries - 1) {
@@ -174,7 +174,7 @@ export const useFullBlockchainIntegration = () => {
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated, userProfile, project, honeycombProfile, createProject, createProfilesTree, createUserAndProfile, toast]);
+  }, [walletConnected, userProfile, project, honeycombProfile, createProject, createProfilesTree, createUserAndProfile, toast]);
 
   // Submit mission with full blockchain integration
   const submitMissionWithBlockchain = useCallback(async (
