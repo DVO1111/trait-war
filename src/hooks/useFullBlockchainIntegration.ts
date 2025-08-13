@@ -85,30 +85,82 @@ export const useFullBlockchainIntegration = () => {
 
     setLoading(true);
     try {
-      console.log('Starting blockchain initialization via edge function...');
+      let currentProject = project;
       
-      // Use the edge function for robust initialization
-      const { data, error } = await supabase.functions.invoke('initialize-blockchain-profile', {
-        body: {
-          walletAddress: userProfile?.wallet_address,
-          userName: userProfile?.display_name || userProfile?.username || 'Warrior',
-          userBio: userProfile?.bio || 'Trait Wars participant'
+      // Step 1: Create project if not exists
+      if (!currentProject) {
+        console.log('Creating new project...');
+        currentProject = await createProject();
+        if (!currentProject) {
+          throw new Error('Failed to create project');
         }
-      });
-
-      if (error) {
-        throw new Error(error.message || 'Edge function error');
+        
+        // Wait for project to be fully processed on blockchain
+        console.log('Waiting for project to be registered...');
+        await new Promise(resolve => setTimeout(resolve, 5000)); // Increased wait time
       }
 
-      if (!data.success) {
-        throw new Error(data.error || 'Initialization failed');
-      }
-
-      console.log('Blockchain initialization completed:', data.data);
-
-      // Update local state to reflect the initialization
-      // In a real implementation, you would fetch the actual data from Honeycomb
+      // Step 2: Create profiles tree with retry logic
+      console.log('Creating profiles tree with project:', currentProject.address);
+      let profilesTreeCreated = false;
+      let retryCount = 0;
+      const maxRetries = 3;
       
+      while (!profilesTreeCreated && retryCount < maxRetries) {
+        try {
+          // Wait before attempting profiles tree creation
+          if (retryCount > 0) {
+            console.log(`Waiting before retry ${retryCount}...`);
+            await new Promise(resolve => setTimeout(resolve, 5000));
+          }
+          
+          profilesTreeCreated = await createProfilesTree(currentProject);
+          if (!profilesTreeCreated && retryCount < maxRetries - 1) {
+            console.log(`Profiles tree creation failed, retrying... (${retryCount + 1}/${maxRetries})`);
+          }
+        } catch (error) {
+          console.log(`Profiles tree creation error: ${error}, retrying... (${retryCount + 1}/${maxRetries})`);
+        }
+        retryCount++;
+      }
+      
+      if (!profilesTreeCreated) {
+        throw new Error('Failed to create profiles tree after multiple attempts');
+      }
+
+      // Step 3: Create user profile with warrior NFT
+      if (!honeycombProfile) {
+        console.log('Creating user profile...');
+        let result = null;
+        retryCount = 0;
+        
+        while (!result && retryCount < maxRetries) {
+          try {
+            // Wait before attempting user profile creation
+            if (retryCount > 0) {
+              console.log(`Waiting before user profile retry ${retryCount}...`);
+              await new Promise(resolve => setTimeout(resolve, 3000));
+            }
+            
+            result = await createUserAndProfile(
+              userProfile?.display_name || userProfile?.username || 'Warrior',
+              userProfile?.bio || 'Trait Wars participant',
+              currentProject
+            );
+            if (!result && retryCount < maxRetries - 1) {
+              console.log(`User profile creation failed, retrying... (${retryCount + 1}/${maxRetries})`);
+            }
+          } catch (error) {
+            console.log(`User profile creation error: ${error}, retrying... (${retryCount + 1}/${maxRetries})`);
+          }
+          retryCount++;
+        }
+        
+        if (!result) {
+          throw new Error('Failed to create user profile after multiple attempts');
+        }
+      }
+
       toast({
         title: "Blockchain Initialized! ⛓️",
         description: "Your profile is now fully integrated with the blockchain",
@@ -126,7 +178,7 @@ export const useFullBlockchainIntegration = () => {
     } finally {
       setLoading(false);
     }
-  }, [walletConnected, userProfile, toast]);
+  }, [walletConnected, userProfile, project, honeycombProfile, createProject, createProfilesTree, createUserAndProfile, toast]);
 
   // Submit mission with full blockchain integration
   const submitMissionWithBlockchain = useCallback(async (
