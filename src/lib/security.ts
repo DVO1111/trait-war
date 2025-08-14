@@ -66,23 +66,61 @@ export const CSP_CONFIG = {
   'style-src': "'self' 'unsafe-inline'", // Needed for Tailwind
   'img-src': "'self' data: https:",
   'font-src': "'self' data:",
-  'connect-src': "'self' https://*.supabase.co https://rpc.test.honeycombprotocol.com wss://*.supabase.co",
+  'connect-src': "'self' https://*.supabase.co https://edge.main.honeycombprotocol.com https://edge.test.honeycombprotocol.com https://rpc.test.honeycombprotocol.com wss://*.supabase.co",
   'frame-ancestors': "'none'",
   'base-uri': "'self'",
   'form-action': "'self'",
+  'object-src': "'none'",
+  'media-src': "'self'",
+  'worker-src': "'self'",
+  'manifest-src': "'self'",
 };
 
 /**
- * Applies CSP headers in production
+ * Enhanced security headers for wallet compatibility
+ */
+export const SECURITY_HEADERS = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'X-XSS-Protection': '1; mode=block',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
+};
+
+/**
+ * Applies comprehensive security headers for wallet safety
  */
 export const applyCspHeaders = (): void => {
-  if (typeof document !== 'undefined' && import.meta.env.PROD) {
-    const meta = document.createElement('meta');
-    meta.httpEquiv = 'Content-Security-Policy';
-    meta.content = Object.entries(CSP_CONFIG)
+  if (typeof document !== 'undefined') {
+    // Apply CSP
+    const cspMeta = document.createElement('meta');
+    cspMeta.httpEquiv = 'Content-Security-Policy';
+    cspMeta.content = Object.entries(CSP_CONFIG)
       .map(([directive, value]) => `${directive} ${value}`)
       .join('; ');
-    document.head.appendChild(meta);
+    document.head.appendChild(cspMeta);
+
+    // Apply additional security headers via meta tags for client-side
+    Object.entries(SECURITY_HEADERS).forEach(([header, value]) => {
+      if (header === 'X-Frame-Options') {
+        const meta = document.createElement('meta');
+        meta.httpEquiv = header;
+        meta.content = value;
+        document.head.appendChild(meta);
+      }
+    });
+
+    // Add referrer policy
+    const referrerMeta = document.createElement('meta');
+    referrerMeta.name = 'referrer';
+    referrerMeta.content = 'strict-origin-when-cross-origin';
+    document.head.appendChild(referrerMeta);
+
+    // Ensure HTTPS redirect
+    if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+      location.replace(`https:${location.href.substring(location.protocol.length)}`);
+    }
   }
 };
 
