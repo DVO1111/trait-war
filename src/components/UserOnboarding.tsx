@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -266,7 +267,7 @@ export const UserOnboarding = ({ isOpen, onClose }: UserOnboardingProps) => {
               variant="outline"
               onClick={prevStep}
               disabled={currentStep === 0}
-              className="border-gaming-accent/30 text-gaming-text hover:bg-gaming-accent/10"
+              className="border-primary/30 text-foreground hover:bg-secondary/50"
             >
               Previous
             </Button>
@@ -275,7 +276,7 @@ export const UserOnboarding = ({ isOpen, onClose }: UserOnboardingProps) => {
               {currentStep < steps.length - 1 ? (
                 <Button
                   onClick={nextStep}
-                  className="bg-gaming-accent text-black hover:bg-gaming-accent/80"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg"
                 >
                   Next Step
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -283,7 +284,7 @@ export const UserOnboarding = ({ isOpen, onClose }: UserOnboardingProps) => {
               ) : (
                 <Button
                   onClick={handleComplete}
-                  className="bg-gaming-accent text-black hover:bg-gaming-accent/80"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg"
                 >
                   Let's Build!
                   <Zap className="ml-2 h-4 w-4" />
