@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBlockchainRewards } from '@/hooks/useBlockchainRewards';
 import { useHoneycomb } from '@/hooks/useHoneycomb';
-import { Trophy, Coins, Award, ExternalLink, Wallet } from 'lucide-react';
+import { useUserProgress } from '@/hooks/useUserProgress';
+import { Trophy, Coins, Award, ExternalLink, Wallet, Star } from 'lucide-react';
 
 export const BlockchainRewardsPanel = () => {
   const { 
@@ -18,6 +19,7 @@ export const BlockchainRewardsPanel = () => {
   } = useBlockchainRewards();
   
   const { project, characters } = useHoneycomb();
+  const { progress: userProgress } = useUserProgress();
   const [selectedReward, setSelectedReward] = useState<any>(null);
 
   useEffect(() => {
@@ -97,7 +99,21 @@ export const BlockchainRewardsPanel = () => {
       </Card>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Star className="w-5 h-5 text-yellow-500" />
+              <div>
+                <p className="text-sm font-medium">Total XP</p>
+                <p className="text-2xl font-bold text-yellow-600">
+                  {userProgress?.total_xp || 0}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -117,7 +133,7 @@ export const BlockchainRewardsPanel = () => {
             <div className="flex items-center gap-2">
               <Coins className="w-5 h-5 text-gold-500" />
               <div>
-                <p className="text-sm font-medium">XP Tokens</p>
+                <p className="text-sm font-medium">Blockchain Tokens</p>
                 <p className="text-2xl font-bold">
                   {userRewards
                     .filter(r => r.type === 'token')
