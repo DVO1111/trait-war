@@ -55,7 +55,7 @@ This project is built with:
 
 ### 1️⃣ Clone the repository
 ```bash
-git clone https://github.com/yourusername/trait-war.git
+git clone https://github.com/DVO1111/trait-war.git
 cd trait-war
 ```
 
