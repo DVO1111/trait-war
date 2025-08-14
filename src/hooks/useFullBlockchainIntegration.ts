@@ -96,8 +96,8 @@ export const useFullBlockchainIntegration = () => {
         }
         
         // Wait for project to be fully processed on blockchain
-        console.log('Waiting for project to be registered...');
-        await new Promise(resolve => setTimeout(resolve, 5000)); // Increased wait time
+        console.log('Waiting for project to be registered...', currentProject.address);
+        await new Promise(resolve => setTimeout(resolve, 15000)); // Increased to 15 seconds
       }
 
       // Step 2: Create profiles tree with retry logic
@@ -108,10 +108,10 @@ export const useFullBlockchainIntegration = () => {
       
       while (!profilesTreeCreated && retryCount < maxRetries) {
         try {
-          // Wait before attempting profiles tree creation
+          // Wait longer before attempting profiles tree creation
           if (retryCount > 0) {
             console.log(`Waiting before retry ${retryCount}...`);
-            await new Promise(resolve => setTimeout(resolve, 5000));
+            await new Promise(resolve => setTimeout(resolve, 10000)); // Increased to 10 seconds
           }
           
           profilesTreeCreated = await createProfilesTree(currentProject);
