@@ -35,7 +35,7 @@ Trait War is fully integrated with the **Honeycomb Protocol**:
 You can view the live demo or a walkthrough of Trait War here:  
 
 **🔗 [Live Demo Link](https://trait-war.vercel.app/)**  
-**📹 Video Walkthrough:** ()
+**📹 Video Walkthrough:** (https://youtu.be/x7koG2aj9Qw?si=FFCiPVj2QuK22K_d)
 
 ---
 
