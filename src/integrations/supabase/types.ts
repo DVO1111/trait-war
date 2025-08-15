@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -340,10 +340,10 @@ export type Database = {
       }
       create_wallet_profile: {
         Args: {
-          p_wallet_address: string
-          p_username?: string
-          p_display_name?: string
           p_bio?: string
+          p_display_name?: string
+          p_username?: string
+          p_wallet_address: string
         }
         Returns: {
           avatar_url: string | null
@@ -361,6 +361,21 @@ export type Database = {
           wallet_address: string
           warrior_count: number | null
         }
+      }
+      get_profile_by_wallet: {
+        Args: { p_wallet_address: string }
+        Returns: {
+          avatar_url: string
+          bio: string
+          created_at: string
+          display_name: string
+          id: string
+          last_login: string
+          updated_at: string
+          username: string
+          wallet_address: string
+          warrior_count: number
+        }[]
       }
     }
     Enums: {
