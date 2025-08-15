@@ -4,7 +4,8 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { client } from "@/constants/client"; // make sure this file exports client
 import { Button } from "@/components/ui/button";
 
-const PROJECT_ID = (import.meta.env.VITE_PROJECT_ID as string) || "REPLACE_WITH_PROJECT_ID";
+// Remove VITE env variables - not supported by Lovable
+const PROJECT_ID = "REPLACE_WITH_PROJECT_ID"; // Replace with actual project ID
 
 type AnyObj = Record<string, any>;
 

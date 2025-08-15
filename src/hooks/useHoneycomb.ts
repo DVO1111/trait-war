@@ -5,6 +5,8 @@ import { honeycombClient, TRAIT_WARS_PROJECT_NAME } from '@/lib/honeycomb';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { getSafeErrorMessage } from '@/lib/security';
+import { validateCharacterTraits, validateUserInfo } from '@/utils/honeycombValidation';
+import { trackProjectCreation, trackProfileCreation, trackCharacterCreation, trackTransactionEnd } from '@/utils/honeycombMetrics';
 
 interface HoneycombProject {
   address: string;
@@ -46,7 +48,9 @@ export const useHoneycomb = () => {
       return null;
     }
 
+    const txId = trackProjectCreation(wallet.publicKey.toBase58());
     setLoading(true);
+    
     try {
       console.log('Creating project with wallet:', wallet.publicKey.toBase58());
       console.log('Creating project with name:', TRAIT_WARS_PROJECT_NAME);
@@ -74,6 +78,8 @@ export const useHoneycomb = () => {
         };
         setProject(newProject);
         
+        trackTransactionEnd(txId, true);
+        
         toast({
           title: "Project created successfully!",
           description: `Trait Wars project created on-chain`,
@@ -81,6 +87,8 @@ export const useHoneycomb = () => {
         
         return newProject;
       }
+      
+      trackTransactionEnd(txId, false, 'Transaction failed');
       return null;
     } catch (error) {
       console.error('Detailed error creating project:', error);
@@ -94,6 +102,8 @@ export const useHoneycomb = () => {
           errorMessage = error.message;
         }
       }
+      
+      trackTransactionEnd(txId, false, errorMessage);
       
       toast({
         title: "Error creating project",
@@ -197,7 +207,20 @@ export const useHoneycomb = () => {
       return null;
     }
 
+    // Validate user info
+    const userInfoValidation = validateUserInfo({ name, bio: bio || "Trait Wars warrior" });
+    if (!userInfoValidation.success) {
+      toast({
+        title: "Invalid user information",
+        description: userInfoValidation.error.errors[0]?.message || "Please check your input",
+        variant: "destructive",
+      });
+      return null;
+    }
+
+    const txId = trackProfileCreation(wallet.publicKey.toBase58());
     setLoading(true);
+    
     try {
       // Step 1: Create user and profile
       const { createNewUserWithProfileTransaction: txResponse } = 
@@ -232,9 +255,15 @@ export const useHoneycomb = () => {
           strength: Math.floor(Math.random() * 100) + 1,
           agility: Math.floor(Math.random() * 100) + 1,
           intelligence: Math.floor(Math.random() * 100) + 1,
-          element: ['Fire', 'Water', 'Earth', 'Air'][Math.floor(Math.random() * 4)],
-          rarity: Math.random() > 0.8 ? 'Legendary' : Math.random() > 0.6 ? 'Rare' : 'Common',
+          element: ['Fire', 'Water', 'Earth', 'Air'][Math.floor(Math.random() * 4)] as 'Fire' | 'Water' | 'Earth' | 'Air',
+          rarity: Math.random() > 0.8 ? 'Legendary' as const : Math.random() > 0.6 ? 'Rare' as const : 'Common' as const,
         };
+
+        // Validate traits
+        const traitsValidation = validateCharacterTraits(warriorTraits);
+        if (!traitsValidation.success) {
+          console.warn('Generated invalid traits, using defaults');
+        }
 
         // Create the warrior NFT
         const newCharacter = await mintWarriorNFT(name, warriorTraits);
@@ -246,6 +275,8 @@ export const useHoneycomb = () => {
           });
         }
         
+        trackTransactionEnd(txId, true);
+        
         toast({
           title: "Warrior created successfully!",
           description: `Your warrior "${name}" has been created on-chain with a unique NFT!`,
@@ -253,12 +284,18 @@ export const useHoneycomb = () => {
         
         return { profile: newProfile, character: newCharacter };
       }
+      
+      trackTransactionEnd(txId, false, 'Transaction failed');
       return null;
     } catch (error) {
       console.error('Error creating user and profile:', error);
+      const errorMessage = getSafeErrorMessage(error);
+      
+      trackTransactionEnd(txId, false, errorMessage);
+      
       toast({
         title: "Error creating warrior",
-        description: getSafeErrorMessage(error),
+        description: errorMessage,
         variant: "destructive",
       });
       return null;

@@ -8,6 +8,7 @@ import { useFullBlockchainIntegration } from '@/hooks/useFullBlockchainIntegrati
 import { BlockchainRewardsPanel } from '@/components/BlockchainRewardsPanel';
 import { HoneycombDemo } from '@/components/HoneycombDemo';
 import { HoneycombAdvancedDemo } from '@/components/HoneycombAdvancedDemo';
+import { HoneycombBountyStatus } from '@/components/HoneycombBountyStatus';
 import { ProjectFinder } from '@/components/ProjectFinder';
 import { 
   CheckCircle, 
@@ -176,13 +177,18 @@ export default function Blockchain() {
       </Card>
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue="rewards" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+      <Tabs defaultValue="bounty" className="w-full">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="bounty">Bounty Status</TabsTrigger>
           <TabsTrigger value="rewards">Rewards & Assets</TabsTrigger>
           <TabsTrigger value="characters">Characters</TabsTrigger>
           <TabsTrigger value="integration">Integration</TabsTrigger>
           <TabsTrigger value="advanced">Advanced</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="bounty" className="space-y-6">
+          <HoneycombBountyStatus />
+        </TabsContent>
 
         <TabsContent value="rewards" className="space-y-6">
           <BlockchainRewardsPanel />
